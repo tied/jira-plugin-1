@@ -39,10 +39,8 @@
 	</workflow-function>
 	<workflow-function key="create-issue-post-function" name="Create the Issue" i18n-name-key="create-issue-post-function.name"
 		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory">
-		<description key="create-issue-post-function.description">The Create Issue Post Function Plugin
-		</description>
-		<function-class>mtc.jira.contracts.workflow.CreateIssuePostFunction
-		</function-class>
+		<description key="create-issue-post-function.description">The Create Issue Post Function Plugin</description>
+		<function-class>mtc.jira.contracts.workflow.CreateIssuePostFunction</function-class>
 		<resource type="velocity" name="view" location="templates/postfunctions/close-parent-issue-post-function.vm" />
 	</workflow-function>
 	<workflow-validator key="close-issue-workflow-validator" name="Close Issue Workflow Validator" i18n-name-key="close-issue-workflow-validator.name"

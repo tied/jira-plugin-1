@@ -58,6 +58,7 @@ public class ProjectHelper {
 				log.debug("Search result not valid");
 			}
 		}
+
 		return result;
 	}
 

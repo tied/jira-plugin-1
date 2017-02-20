@@ -32,19 +32,30 @@ public class UploadServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+
 		String csv = request.getParameter("comment");
-		File dataFile = new File("data.csv");
-		System.out.println("Writing in data file " + dataFile.getAbsolutePath());
+		
 		Exception ex = null;
 		ServletOutputStream out = response.getOutputStream();
-		try (FileWriter writer = new FileWriter(new File("data.csv"))) {
+		
+		File temp = File.createTempFile("contract-data", ".tmp");
+
+		out.println("<br> " + temp.getAbsolutePath() + " " + temp.canWrite());
+		CSVParser.setCSVPath(temp.getAbsolutePath());
+		
+		try (FileWriter writer = new FileWriter(temp)) {
 			writer.write(csv);
 		} catch (Exception e) {
 			ex = e;
+			out.println("<br>Failed to write on " + temp.getAbsolutePath());
 			out.println("<br>Exception: " + e.getMessage());
+			for (StackTraceElement el : e.getStackTrace()) {
+				out.println("<br>" + el.getFileName() + "." + el.getMethodName() + "." + el.getLineNumber());
+				return;
+			}
 		}
 		if (ex == null) {
-			out.println("<br>Wrote to file " + dataFile.getAbsolutePath());
+			out.println("<br>Wrote to file " + temp.getAbsolutePath());
 		}
 		ex = null;
 		Map<String, List<String>> data = CSVParser.getData();
@@ -63,14 +74,14 @@ public class UploadServlet extends HttpServlet {
 		} catch (SearchException e) {
 			out.println("<br>Exception: " + e.getMessage());
 			e.printStackTrace();
-		}
+		} 
 	}
 
 	private void getTextArea(ServletOutputStream out) throws IOException {
 		out.println("<html>");
 		out.println("<body>");
 
-		out.println("<form action=\"helloworld\" id=\"usrform\" method=\"post\">");
+		out.println("<form action=\"uploadcsv\" id=\"usrform\" method=\"post\">");
 		out.println("<textarea rows=\"50\" cols=\"150\" name=\"comment\" form=\"usrform\" ></textarea>");
 		out.println("<input type=\"submit\">");
 		out.println("</form>");
