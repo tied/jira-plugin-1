@@ -1,4 +1,4 @@
-package com.example.plugins.tutorial.jira.workflow;
+package mtc.jira.contracts.workflow;
 
 import com.atlassian.scheduler.JobRunner;
 import com.atlassian.scheduler.JobRunnerRequest;

@@ -1,4 +1,4 @@
-package com.example.plugins.tutorial.jira.workflow;
+package mtc.jira.contracts.workflow;
 
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginValidatorFactory;

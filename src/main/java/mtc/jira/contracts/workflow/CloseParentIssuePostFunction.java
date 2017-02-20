@@ -1,4 +1,4 @@
-package com.example.plugins.tutorial.jira.workflow;
+package mtc.jira.contracts.workflow;
 
 import java.math.BigDecimal;
 import java.util.List;

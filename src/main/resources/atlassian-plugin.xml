@@ -1,104 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<atlassian-plugin key="${project.groupId}.${project.artifactId}"
-	name="${project.name}" plugins-version="2">
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+
 	<plugin-info>
 		<description>${project.description}</description>
 		<version>${project.version}</version>
 		<vendor name="${project.organization.name}" url="${project.organization.url}" />
 	</plugin-info>
-	<customfield-type name="Money Custom Field"
-		i18n-name-key="money-custom-field.name" key="money-custom-field"
-		class="com.atlassian.tutorial.customfield.MoneyCustomField">
-		<description key="money-custom-field.description">The Money Custom Field Plugin
-		</description>
-		<resource name="view" type="velocity"
-			location="/templates/customfields/money-custom-field/view.vm" />
-		<!-- <resource name="edit" type="velocity" location="/templates/customfields/money-custom-field/edit.vm" 
-			/> -->
-	</customfield-type>
-	<workflow-condition key="parent-issue-blocking-condition"
-		name="Parent Issue Blocking Condition" i18n-name-key="parent-issue-blocking-condition.name"
-		class="com.example.plugins.tutorial.jira.workflow.ParentIssueBlockingConditionFactory">
-		<description key="parent-issue-blocking-condition.description">The Parent Issue Blocking Condition
-			Plugin
-		</description>
-		<condition-class>com.example.plugins.tutorial.jira.workflow.ParentIssueBlockingCondition
-		</condition-class>
-		<resource type="velocity" name="view"
-			location="templates/conditions/parent-issue-blocking-condition.vm" />
-		<resource type="velocity" name="input-parameters"
-			location="templates/conditions/parent-issue-blocking-condition-input.vm" />
-		<resource type="velocity" name="edit-parameters"
-			location="templates/conditions/parent-issue-blocking-condition-input.vm" />
+
+	<workflow-condition key="parent-issue-blocking-condition" name="Parent Issue Blocking Condition" i18n-name-key="parent-issue-blocking-condition.name"
+		class="mtc.jira.contracts.workflow.ParentIssueBlockingConditionFactory">
+		<description key="parent-issue-blocking-condition.description">The Parent Issue Blocking Condition Plugin</description>
+		<condition-class>mtc.jira.contracts.workflow.ParentIssueBlockingCondition</condition-class>
+		<resource type="velocity" name="view" location="templates/conditions/parent-issue-blocking-condition.vm" />
+		<resource type="velocity" name="input-parameters" location="templates/conditions/parent-issue-blocking-condition-input.vm" />
+		<resource type="velocity" name="edit-parameters" location="templates/conditions/parent-issue-blocking-condition-input.vm" />
 	</workflow-condition>
 
-	<workflow-function key="close-parent-issue-post-function"
-		name="Close Parent Issue Post Function" i18n-name-key="close-parent-issue-post-function.name"
+	<workflow-function key="close-parent-issue-post-function" name="Close Parent Issue Post Function" i18n-name-key="close-parent-issue-post-function.name"
 		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory">
-		<description key="close-parent-issue-post-function.description">The Close Parent Issue Post Function
-			Plugin
-		</description>
-		<function-class>com.example.plugins.tutorial.jira.workflow.CloseParentIssuePostFunction
+		<description key="close-parent-issue-post-function.description">The Close Parent Issue Post Function Plugin</description>
+		<function-class>mtc.jira.contracts.workflow.CloseParentIssuePostFunction
 		</function-class>
-		<resource type="velocity" name="view"
-			location="templates/postfunctions/close-parent-issue-post-function.vm" />
+		<resource type="velocity" name="view" location="templates/postfunctions/close-parent-issue-post-function.vm" />
 	</workflow-function>
-	<workflow-function key="reopen-issue-post-function"
-		name="Reopen Parent Issue Post Function" i18n-name-key="reopen-parent-issue-post-function.name"
+	<workflow-function key="reopen-issue-post-function" name="Reopen Parent Issue Post Function" i18n-name-key="reopen-parent-issue-post-function.name"
 		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory">
-		<description key="reopen-parent-issue-post-function.description">The Reopen Parent Issue Post Function
-			Plugin
-		</description>
-		<function-class>com.example.plugins.tutorial.jira.workflow.ReopenIssuePostFunction
-		</function-class>
-		<resource type="velocity" name="view"
-			location="templates/postfunctions/close-parent-issue-post-function.vm" />
+		<description key="reopen-parent-issue-post-function.description">The Reopen Parent Issue Post Function Plugin</description>
+		<function-class>mtc.jira.contracts.workflow.ReopenIssuePostFunction</function-class>
+		<resource type="velocity" name="view" location="templates/postfunctions/close-parent-issue-post-function.vm" />
 	</workflow-function>
-	<workflow-function key="create-issue-post-function"
-		name="Create the Issue" i18n-name-key="create-issue-post-function.name"
+	<workflow-function key="create-issue-post-function" name="Create the Issue" i18n-name-key="create-issue-post-function.name"
 		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory">
 		<description key="create-issue-post-function.description">The Create Issue Post Function Plugin
 		</description>
-		<function-class>com.example.plugins.tutorial.jira.workflow.CreateIssuePostFunction
+		<function-class>mtc.jira.contracts.workflow.CreateIssuePostFunction
 		</function-class>
-		<resource type="velocity" name="view"
-			location="templates/postfunctions/close-parent-issue-post-function.vm" />
+		<resource type="velocity" name="view" location="templates/postfunctions/close-parent-issue-post-function.vm" />
 	</workflow-function>
-	<workflow-validator key="close-issue-workflow-validator"
-		name="Close Issue Workflow Validator" i18n-name-key="close-issue-workflow-validator.name"
-		class="com.example.plugins.tutorial.jira.workflow.CloseIssueWorkflowValidatorFactory">
+	<workflow-validator key="close-issue-workflow-validator" name="Close Issue Workflow Validator" i18n-name-key="close-issue-workflow-validator.name"
+		class="mtc.jira.contracts.workflow.CloseIssueWorkflowValidatorFactory">
 		<description key="close-issue-workflow-validator.description">The My Workflow Validator Plugin
 		</description>
-		<validator-class>com.example.plugins.tutorial.jira.workflow.CloseIssueWorkflowValidator
+		<validator-class>mtc.jira.contracts.workflow.CloseIssueWorkflowValidator
 		</validator-class>
-		<resource type="velocity" name="view"
-			location="templates/validators/close-issue-workflow-validator.vm" />
-		<resource type="velocity" name="input-parameters"
-			location="templates/validators/close-issue-workflow-validator.vm" />
-		<resource type="velocity" name="edit-parameters"
-			location="templates/validators/close-issue-workflow-validator.vm" />
+		<resource type="velocity" name="view" location="templates/validators/close-issue-workflow-validator.vm" />
+		<resource type="velocity" name="input-parameters" location="templates/validators/close-issue-workflow-validator.vm" />
+		<resource type="velocity" name="edit-parameters" location="templates/validators/close-issue-workflow-validator.vm" />
 	</workflow-validator>
 
-	<job key="berlin.mtc.populatefields" name="Fill empty fields"
-		class="com.example.plugins.tutorial.jira.workflow.PopulateFieldsJob" />
-	<trigger key="myTrigger" name="My Trigger">
-		<job key="berlin.mtc.populatefields" />
-		<schedule repeat-interval="50000" />
-	</trigger>
+	<!-- <job key="berlin.mtc.populatefields" name="Fill empty fields" class="mtc.jira.contracts.workflow.PopulateFieldsJob" /> <trigger 
+		key="myTrigger" name="My Trigger"> <job key="berlin.mtc.populatefields" /> <schedule repeat-interval="50000" /> </trigger> -->
 
-<!-- 	<servlet name="Hello World Servlet" key="helloWorld"
-		class="com.example.myplugins.helloworld.HelloWorldServlet">
-		<description>Says Hello World, Australia or your name.</description>
-		<url-pattern>/helloworld</url-pattern>
-		<init-param>
-			<param-name>defaultName</param-name>
-			<param-value>Australia</param-value>
-		</init-param>
-	</servlet> -->
-	
-	<listener name='Audit Log Listener' class='com.example.plugins.tutorial.jira.workflow.AuditListener' key='auditListener'>
-        <description>Provides an audit log for each event within Jira.</description>
-    </listener>
+	<servlet name="Upload file servlet" key="upload servlet" class="mtc.jira.contracts.servlet.UploadServlet">
+		<description>Uploads the contract structure data.</description>
+		<url-pattern>/uploadcsv</url-pattern>
+	</servlet>
+
+	<!-- <listener name='Audit Log Listener' class='mtc.jira.contracts.workflow.AuditListener' key='auditListener'> <description>Provides 
+		an audit log for each event within Jira.</description> </listener> -->
 
 	<resource type="i18n" name="i18n" location="atlassian-plugin" />
 </atlassian-plugin>

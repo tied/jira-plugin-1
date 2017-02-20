@@ -1,3 +1,7 @@
 #customControlHeader ($action $customField.id $customField.name $fieldLayoutItem.required $displayParameters $auiparams)
-<input class="text" id="$customField.id" name="$customField.id" type="text" value="$textutils.htmlEncode($!value)" />
+<select class="text" id="$customField.id" name="$customField.id">
+#foreach ($str in $result) 
+	<option value="$str">$str</option>
+#end
+</select>
 #customControlFooter ($action $customField.id $fieldLayoutItem.fieldDescription $displayParameters $auiparams)
