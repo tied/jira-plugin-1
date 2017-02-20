@@ -13,14 +13,15 @@
 		</description>
 		<resource name="view" type="velocity"
 			location="/templates/customfields/money-custom-field/view.vm" />
-<!-- 		<resource name="edit" type="velocity"
-			location="/templates/customfields/money-custom-field/edit.vm" /> -->
+		<!-- <resource name="edit" type="velocity" location="/templates/customfields/money-custom-field/edit.vm" 
+			/> -->
 	</customfield-type>
 	<workflow-condition key="parent-issue-blocking-condition"
 		name="Parent Issue Blocking Condition" i18n-name-key="parent-issue-blocking-condition.name"
 		class="com.example.plugins.tutorial.jira.workflow.ParentIssueBlockingConditionFactory">
 		<description key="parent-issue-blocking-condition.description">The Parent Issue Blocking Condition
-			Plugin</description>
+			Plugin
+		</description>
 		<condition-class>com.example.plugins.tutorial.jira.workflow.ParentIssueBlockingCondition
 		</condition-class>
 		<resource type="velocity" name="view"
@@ -35,18 +36,30 @@
 		name="Close Parent Issue Post Function" i18n-name-key="close-parent-issue-post-function.name"
 		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory">
 		<description key="close-parent-issue-post-function.description">The Close Parent Issue Post Function
-			Plugin</description>
+			Plugin
+		</description>
 		<function-class>com.example.plugins.tutorial.jira.workflow.CloseParentIssuePostFunction
 		</function-class>
 		<resource type="velocity" name="view"
 			location="templates/postfunctions/close-parent-issue-post-function.vm" />
 	</workflow-function>
-		<workflow-function key="reopen-issue-post-function"
+	<workflow-function key="reopen-issue-post-function"
 		name="Reopen Parent Issue Post Function" i18n-name-key="reopen-parent-issue-post-function.name"
 		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory">
 		<description key="reopen-parent-issue-post-function.description">The Reopen Parent Issue Post Function
-			Plugin</description>
+			Plugin
+		</description>
 		<function-class>com.example.plugins.tutorial.jira.workflow.ReopenIssuePostFunction
+		</function-class>
+		<resource type="velocity" name="view"
+			location="templates/postfunctions/close-parent-issue-post-function.vm" />
+	</workflow-function>
+	<workflow-function key="create-issue-post-function"
+		name="Create the Issue" i18n-name-key="create-issue-post-function.name"
+		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory">
+		<description key="create-issue-post-function.description">The Create Issue Post Function Plugin
+		</description>
+		<function-class>com.example.plugins.tutorial.jira.workflow.CreateIssuePostFunction
 		</function-class>
 		<resource type="velocity" name="view"
 			location="templates/postfunctions/close-parent-issue-post-function.vm" />
@@ -65,6 +78,27 @@
 		<resource type="velocity" name="edit-parameters"
 			location="templates/validators/close-issue-workflow-validator.vm" />
 	</workflow-validator>
+
+	<job key="berlin.mtc.populatefields" name="Fill empty fields"
+		class="com.example.plugins.tutorial.jira.workflow.PopulateFieldsJob" />
+	<trigger key="myTrigger" name="My Trigger">
+		<job key="berlin.mtc.populatefields" />
+		<schedule repeat-interval="50000" />
+	</trigger>
+
+<!-- 	<servlet name="Hello World Servlet" key="helloWorld"
+		class="com.example.myplugins.helloworld.HelloWorldServlet">
+		<description>Says Hello World, Australia or your name.</description>
+		<url-pattern>/helloworld</url-pattern>
+		<init-param>
+			<param-name>defaultName</param-name>
+			<param-value>Australia</param-value>
+		</init-param>
+	</servlet> -->
+	
+	<listener name='Audit Log Listener' class='com.example.plugins.tutorial.jira.workflow.AuditListener' key='auditListener'>
+        <description>Provides an audit log for each event within Jira.</description>
+    </listener>
 
 	<resource type="i18n" name="i18n" location="atlassian-plugin" />
 </atlassian-plugin>
