@@ -7,6 +7,7 @@
 		<vendor name="${project.organization.name}" url="${project.organization.url}" />
 	</plugin-info>
 
+
 	<customfield-type name="Contracts CF" i18n-name-key="contract-custom-field.name" key="contract-custom-field"
 		class="mtc.jira.contracts.cf.ContractsMultiSelectCF">
 		<description key="money-custom-field.description">Multi Select field for MTC Contracts</description>
