@@ -7,6 +7,13 @@
 		<vendor name="${project.organization.name}" url="${project.organization.url}" />
 	</plugin-info>
 
+	<customfield-type name="Contracts CF" i18n-name-key="contract-custom-field.name" key="contract-custom-field"
+		class="mtc.jira.contracts.cf.ContractsMultiSelectCF">
+		<description key="money-custom-field.description">Multi Select field for MTC Contracts</description>
+		<resource name="edit" type="velocity" location="/templates/customfields/contracts-edit.vm" />
+		<resource name="view" type="velocity" location="/templates/customfields/contracts-view.vm" />
+	</customfield-type>
+
 	<workflow-condition key="parent-issue-blocking-condition" name="Parent Issue Blocking Condition" i18n-name-key="parent-issue-blocking-condition.name"
 		class="mtc.jira.contracts.workflow.ParentIssueBlockingConditionFactory">
 		<description key="parent-issue-blocking-condition.description">The Parent Issue Blocking Condition Plugin</description>
