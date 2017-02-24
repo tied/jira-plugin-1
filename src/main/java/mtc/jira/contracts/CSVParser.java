@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.atlassian.jira.workflow.WorkflowException;
 
@@ -22,8 +23,25 @@ public class CSVParser {
 	private static String FILE_PREFIX = "contract-data";
 	private static String FILE_EXT = ".tmp";
 
-	public static Map<String, List<String>> getData() throws IOException, WorkflowException {
+		
+	public static Map<String, List<String>> readData(Stream<String> lines) {
 		Map<String, List<String>> result = new HashMap<>();
+		lines.forEach(l -> parseLine(l, result));
+		return result;
+	}
+	
+	public static Map<String, List<String>> getDataFromString(String str) { 
+		return readData(Arrays.asList(str.split("\n")).stream());
+	}
+	
+	public static Map<String, List<String>> getDataFromFile() throws IOException, WorkflowException {
+		InputStream in = new FileInputStream(findFile());
+		try (BufferedReader read = new BufferedReader(new InputStreamReader(in))) {
+			return readData(read.lines());
+		}
+	}
+
+	private static File findFile() throws WorkflowException {
 		if(CSV_FILE == null) {
 			CSV_FILE = findDataPath();
 		}		
@@ -31,13 +49,9 @@ public class CSVParser {
 		if (!file.exists()) {
 			throw new WorkflowException("File " + file.getAbsolutePath() + " does not exist");
 		}
-		InputStream in = new FileInputStream(file);
-		try (BufferedReader read = new BufferedReader(new InputStreamReader(in))) {
-			read.lines().forEach(l -> parseLine(l, result));
-		}
-		return result;
+		return file;
 	}
-
+	
 	private static void parseLine(String line, Map<String, List<String>> result) {
 		String[] parts = line.split(";");
 		if (!isDataLine(parts)) {
@@ -49,7 +63,7 @@ public class CSVParser {
 		}
 		result.put(parts[1], entries);
 	}
-
+	
 	private static boolean isDataLine(String[] parts) {
 		if (parts.length < 4) {
 			return false;
@@ -58,8 +72,14 @@ public class CSVParser {
 		return !id.isEmpty() && Character.isDigit(id.charAt(0));
 	}
 	
-	private static String findDataPath() throws IOException, WorkflowException {
-		File folder = File.createTempFile("yx", "tmp").getParentFile();
+	private static String findDataPath() throws WorkflowException {
+		File folder;
+		try {
+			// Just test if you can access the temp folder
+			folder = File.createTempFile("xy", "tmp").getParentFile();
+		} catch (IOException e) {
+			throw new WorkflowException("Cannot write to temporary folder");
+		}
 		File[] files = folder.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {

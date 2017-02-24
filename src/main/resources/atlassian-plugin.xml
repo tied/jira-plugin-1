@@ -59,7 +59,11 @@
 
 	<servlet name="Upload file servlet" key="upload servlet" class="mtc.jira.contracts.servlet.UploadServlet">
 		<description>Uploads the contract structure data.</description>
-		<url-pattern>/uploadcsv</url-pattern>
+		<url-pattern>/upload</url-pattern>
+	</servlet>
+	<servlet name="Update project servlet" key="update servlet" class="mtc.jira.contracts.servlet.UpdateServlet">
+		<description>Update the current project.</description>
+		<url-pattern>/update</url-pattern>
 	</servlet>
 
 	<!-- <listener name='Audit Log Listener' class='mtc.jira.contracts.workflow.AuditListener' key='auditListener'> <description>Provides 

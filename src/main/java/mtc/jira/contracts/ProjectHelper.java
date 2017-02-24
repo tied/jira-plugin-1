@@ -38,7 +38,6 @@ public class ProjectHelper {
 		Project project = projectManager.getProjectByCurrentKey(pluginKey);
 		ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
 		Collection<IssueType> issueTypes = project.getIssueTypes();
-
 		List<Issue> result = new ArrayList<>();
 
 		for (IssueType issueType : issueTypes) {
@@ -58,7 +57,6 @@ public class ProjectHelper {
 				log.debug("Search result not valid");
 			}
 		}
-
 		return result;
 	}
 

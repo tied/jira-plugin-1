@@ -25,7 +25,7 @@ public class CreateIssuePostFunction extends AbstractJiraFunctionProvider {
 		log.debug("Executing create post function");
 		MutableIssue issue = getIssue(transientVars);
 		try {
-			Map<String, List<String>> data = CSVParser.getData();
+			Map<String, List<String>> data = CSVParser.getDataFromFile();
 			log.debug("Parsed data.csv: " + data);
 			ProjectHelper.fillCustomFields(issue, data);
 			return;

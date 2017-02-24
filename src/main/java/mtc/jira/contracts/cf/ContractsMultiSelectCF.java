@@ -39,7 +39,7 @@ public class ContractsMultiSelectCF extends GenericTextCFType {
 	public Map getVelocityParameters(Issue issue, CustomField field, FieldLayoutItem fieldLayoutItem) {
 		Map<String, List<String>> map = new HashMap<>();
 		try {
-			List<String> results = new ArrayList<>(CSVParser.getData().keySet());
+			List<String> results = new ArrayList<>(CSVParser.getDataFromFile().keySet());
 			map.put("result", results);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
