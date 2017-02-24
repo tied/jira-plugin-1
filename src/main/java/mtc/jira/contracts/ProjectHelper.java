@@ -1,6 +1,7 @@
 package mtc.jira.contracts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,17 +29,88 @@ import com.opensymphony.workflow.WorkflowException;
 public class ProjectHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(CSVParser.class);
+	private List<IssueUpdate> updates = new ArrayList<>();
+	
+	private MessageHandler messageHandler;
 
-	public static List<Issue> getIssuesForProject(String pluginKey) throws SearchException {
+	public ProjectHelper() {
+		this.messageHandler = new MessageHandler();
+	}
 
-		log.debug("Getting issues for project " + pluginKey);
+	public void getProjectUpdates(Map<String, CSVEntry> data) throws WorkflowException {
+		List<Issue> issues = getIssuesForProject(new String[] { "PLUG" });		
+		for (Issue issue : issues) {
+			
+			log.debug("Checking " + issue.getKey() );
+			
+			try {
+				checkUpdate(issue, data);
+			} catch(Exception e) {
+				log.debug(e.getMessage());
+				e.printStackTrace();
+			}
+		}
+	}
 
+	public void checkUpdate(Issue issue, Map<String, CSVEntry> data) throws WorkflowException {
+		log.debug("Checking updates for issue: " + issue.getKey());
+		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
+		customFields.stream().map(t -> t.getName()).forEach(t -> log.debug(t));
+		Optional<CustomField> opField = customFields.stream().filter(t -> t.getName().equals(PluginConstants.CF_FIELDS_NAMES[1]))
+				.findFirst();
+		if (!opField.isPresent()) {
+			throw new WorkflowException("CF_TYPE field is missing");
+		}
+		CustomField typeField = opField.get();
+		String type = (String) issue.getCustomFieldValue(typeField);
+		if (type == null || type.isEmpty()) {
+			type = data.keySet().iterator().next();			
+			// throw new WorkflowException("Empty type field");
+		}
+		CSVEntry entries = data.get(type);
+		if (entries == null) {
+			String msg = "Unknown project / contracts key: " + type;
+			throw new WorkflowException(msg);
+		}
+
+		for(CustomField customField : customFields) {
+			String newValue = entries.get(customField.getName());
+			if(newValue == null) {
+				continue;
+			}
+			Object oldValue = customField.getValue(issue);
+			if(!newValue.equals(oldValue)) {
+				updates.add(new IssueUpdate(issue, customField, oldValue, newValue));
+			}
+		}
+	}
+
+	public List<Issue> getIssuesForProject(String[] projectKeys) throws WorkflowException {
+
+		log.debug("Getting issues for project " + projectKeys);
+
+		List<Issue> result = new ArrayList<>();
 		SearchService searchService = ComponentAccessor.getComponentOfType(SearchService.class);
 		ProjectManager projectManager = ComponentAccessor.getProjectManager();
-		Project project = projectManager.getProjectByCurrentKey(pluginKey);
 		ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
-		Collection<IssueType> issueTypes = project.getIssueTypes();
+
+		for (String projectKey : projectKeys) {
+			result.addAll(getIssueByProjectKey(projectKey, searchService, projectManager, currentUser));
+		}
+
+		messageHandler.info("Found " + result.size() + " issues for project(s) " + Arrays.toString(projectKeys));
+		
+		log.debug("Issues to check: " + result);
+		
+		return result;
+	}
+
+	private List<Issue> getIssueByProjectKey(String projectKey, SearchService searchService,
+			ProjectManager projectManager, ApplicationUser currentUser) throws WorkflowException {
 		List<Issue> result = new ArrayList<>();
+		Project project = projectManager.getProjectByCurrentKey(projectKey);
+
+		Collection<IssueType> issueTypes = project.getIssueTypes();
 
 		for (IssueType issueType : issueTypes) {
 			String jqlQuery = "project = '" + project.getKey() + "' and status != 'Closed' and issuetype='"
@@ -48,8 +120,14 @@ public class ProjectHelper {
 			log.debug("Executing jql Query: " + jqlQuery);
 
 			if (parseResult.isValid()) {
-				final SearchResults results = searchService.search(currentUser, parseResult.getQuery(),
-						new com.atlassian.jira.web.bean.PagerFilter<>());
+
+				SearchResults results;
+				try {
+					results = searchService.search(currentUser, parseResult.getQuery(),
+							new com.atlassian.jira.web.bean.PagerFilter<>());
+				} catch (SearchException e) {
+					throw new WorkflowException("Unable to get search results for project " + projectKey, e);
+				}
 				final List<Issue> issues = results.getIssues();
 				log.debug("Result " + issues.stream().map(t -> t.getKey()).collect(Collectors.joining(",")));
 				result.addAll(issues);
@@ -57,54 +135,80 @@ public class ProjectHelper {
 				log.debug("Search result not valid");
 			}
 		}
+
 		return result;
 	}
 
-	public static String fillCustomFields(Issue issue, Map<String, List<String>> data) throws WorkflowException {
-		log.debug("### fillCustomFields");
+	
+	public void initFields(Issue issue, Map<String,CSVEntry> data) throws WorkflowException {
 		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
-		log.debug("Custom fields for issue: ");
-		customFields.stream().map(t -> t.getName()).forEach(t -> log.debug(t));
-		Optional<CustomField> opField = customFields.stream().filter(t -> t.getName().equals("CF_CONTRACT"))
+		Optional<CustomField> opField = customFields.stream().filter(t -> t.getName().equals(PluginConstants.CF_FIELDS_NAMES[1]))
 				.findFirst();
 		if (!opField.isPresent()) {
 			throw new WorkflowException("CF_TYPE field is missing");
 		}
 		CustomField typeField = opField.get();
 		String type = (String) issue.getCustomFieldValue(typeField);
-		if (type == null || type.isEmpty()) {
-			throw new WorkflowException("Empty type field");
+		CSVEntry csvEntry = data.get(type);
+		if(csvEntry == null) {
+			throw new WorkflowException("No entries for this value: " + type);
 		}
-		List<String> entries = data.get(type);
-		if (entries == null) {
-			String msg = "Unknown project / contracts key: " + type;
-			// msg += "\nAvailable types are:\n";
-			// msg += data.keySet().stream().collect(Collectors.joining(","));
-			throw new WorkflowException(msg);
-		}
-
-		StringBuilder buf = new StringBuilder();
-		for (int i = 0; i < entries.size(); i++) {
-			String name = "CF_" + (i + 1);
-			Optional<CustomField> cf = customFields.stream().filter(t -> t.getName().equals(name)).findFirst();
-			if (cf.isPresent()) {
-				log.debug("Setting field value: " + name + " to " + entries.get(i));
-				Object oldValue = cf.get().getValue(issue);
-				String newValue = entries.get(i);
-				if (issue instanceof MutableIssue) {
-					((MutableIssue) issue).setCustomFieldValue(cf.get(), newValue);
-				} else {
-					upDateCustomField(cf.get(), issue, newValue);
-				}
-				buf.append(name + " : " + oldValue + " ==> " + newValue);
+		
+		for(CustomField customField : customFields) {
+			String newValue = csvEntry.get(customField.getName());
+			if(newValue == null) {
+				continue;
+			}
+			Object oldValue = customField.getValue(issue);
+			if(!newValue.equals(oldValue)) {
+				new IssueUpdate(issue, customField, oldValue, newValue).publish();
 			}
 		}
-		return buf.toString();
 	}
-
-	private static void upDateCustomField(CustomField cf, Issue issue, String newValue) {
-		cf.updateValue(null, issue, new ModifiedValue<Object>(cf.getValue(issue), newValue),
-				new DefaultIssueChangeHolder());
-		log.debug("Updatet field value " + cf.getValue(issue) + " " + newValue);
+	
+	public MessageHandler getMessageHandler() {
+		return messageHandler;
+	}
+	
+	
+	public List<IssueUpdate> getUpdates() {
+		return updates;
+	}
+	
+	public class IssueUpdate {
+		
+		private Object oldValue;
+		private String newValue;
+		private CustomField customField;
+		private Issue issue;
+		
+		public IssueUpdate(Issue issue, CustomField customField, Object oldValue, String newValue) {
+			this.issue = issue;
+			this.customField = customField;
+			this.oldValue = oldValue;
+			this.newValue = newValue;
+		}
+		
+		public void publish() {
+			if (issue instanceof MutableIssue) {
+				((MutableIssue) issue).setCustomFieldValue(customField, newValue);
+			} else {
+				customField.updateValue(null, issue, new ModifiedValue<Object>(oldValue, newValue),
+						new DefaultIssueChangeHolder());
+			}
+			messageHandler.info("Updating " + issue.getKey() + " from " + oldValue + " to " + newValue);
+			log.debug("Updated field value " + customField.getValue(issue) + " " + newValue);
+		}
+		
+		public String getHTMLString() {
+			StringBuilder sb = new StringBuilder();
+			String url = ComponentAccessor.getApplicationProperties().getString("jira.baseurl") + "/browse/" + issue.getKey();
+			
+			sb.append("<a href=\"" + url + "\">" + issue.getKey() + "<a>: ");
+			sb.append("Field " + customField.getName() + " will be changed from ");
+			sb.append(oldValue + " to " + newValue);
+			
+			return sb.toString();
+		}	
 	}
 }

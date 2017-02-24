@@ -1,23 +1,12 @@
 package mtc.jira.contracts.servlet;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.search.SearchException;
-import com.opensymphony.workflow.WorkflowException;
-
-import mtc.jira.contracts.CSVParser;
-import mtc.jira.contracts.ProjectHelper;
 
 public class UploadServlet extends HttpServlet {
 

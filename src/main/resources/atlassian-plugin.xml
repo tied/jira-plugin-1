@@ -66,8 +66,5 @@
 		<url-pattern>/update</url-pattern>
 	</servlet>
 
-	<!-- <listener name='Audit Log Listener' class='mtc.jira.contracts.workflow.AuditListener' key='auditListener'> <description>Provides 
-		an audit log for each event within Jira.</description> </listener> -->
-
 	<resource type="i18n" name="i18n" location="atlassian-plugin" />
 </atlassian-plugin>

@@ -1,7 +1,6 @@
 package mtc.jira.contracts.workflow;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import com.atlassian.jira.workflow.function.issue.AbstractJiraFunctionProvider;
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.workflow.WorkflowException;
 
+import mtc.jira.contracts.CSVEntry;
 import mtc.jira.contracts.CSVParser;
 import mtc.jira.contracts.ProjectHelper;
 
@@ -24,10 +24,11 @@ public class CreateIssuePostFunction extends AbstractJiraFunctionProvider {
 	public void execute(Map transientVars, Map args, PropertySet ps) throws WorkflowException {
 		log.debug("Executing create post function");
 		MutableIssue issue = getIssue(transientVars);
+		
 		try {
-			Map<String, List<String>> data = CSVParser.getDataFromFile();
-			log.debug("Parsed data.csv: " + data);
-			ProjectHelper.fillCustomFields(issue, data);
+			Map<String, CSVEntry> data = CSVParser.getDataFromFile();
+			ProjectHelper helper = new ProjectHelper();
+			helper.initFields(issue, data);
 			return;
 		} catch (IOException e) {
 			log.error("Error reading data.csv", e);

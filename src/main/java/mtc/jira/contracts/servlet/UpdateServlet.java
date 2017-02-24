@@ -3,7 +3,6 @@ package mtc.jira.contracts.servlet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -12,19 +11,22 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.search.SearchException;
 import com.opensymphony.workflow.WorkflowException;
 
+import mtc.jira.contracts.CSVEntry;
 import mtc.jira.contracts.CSVParser;
+import mtc.jira.contracts.MessageHandler;
 import mtc.jira.contracts.ProjectHelper;
 
 public class UpdateServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	private String UPDATE_RESULT_KEY = "___result___";
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
 		String csv = req.getParameter("csv");
 
 		Exception ex = null;
@@ -32,6 +34,8 @@ public class UpdateServlet extends HttpServlet {
 
 		File temp = File.createTempFile("contract-data", ".tmp");
 
+		out.println("<html>");
+		out.println("<body>");
 		out.println("<br> " + temp.getAbsolutePath() + " " + temp.canWrite());
 		CSVParser.setCSVPath(temp.getAbsolutePath());
 
@@ -50,43 +54,66 @@ public class UpdateServlet extends HttpServlet {
 			out.println("<br>Wrote to file " + temp.getAbsolutePath());
 		}
 		ex = null;
-		Map<String, List<String>> data = CSVParser.getDataFromFile();
+
+		Map<String, CSVEntry> data = CSVParser.getDataFromFile();
+		ProjectHelper helper = new ProjectHelper();
+
 		try {
-			List<Issue> issues = ProjectHelper.getIssuesForProject("PLUG");
-			for (Issue issue : issues) {
-				out.println("<br><b>Updating Issue " + issue.getKey() + "</b>");
-				try {
-					String result = ProjectHelper.fillCustomFields(issue, data);
-					out.println("<br>" + result + "<br>");
-				} catch (WorkflowException e) {
-					ex = e;
-					out.println("<br>Exception: " + e.getMessage());
-				}
-			}
-		} catch (SearchException e) {
-			out.println("<br>Exception: " + e.getMessage());
-			e.printStackTrace();
+			helper.getProjectUpdates(data);
+		} catch (WorkflowException e) {
+			out.println(e.getMessage());
 		}
-		
-		out.println("<p><input type=\"submit\"></p>");
-	}
 
-	private void getTextArea(ServletOutputStream out) throws IOException {
+		MessageHandler handler = helper.getMessageHandler();
+		out.println("<h1>Errors</h1>");
+		for (String msg : handler.getErrors()) {
+			out.println(msg);
+		}
+		out.println("<h1>Warnings</h1>");
+		for (String msg : handler.getErrors()) {
+			out.println(msg);
+		}
+		out.println("<h1>Infos</h1>");
+		for (String msg : handler.getErrors()) {
+			out.println(msg);
+		}
 
-		out.println("<html>");
-		out.println("<body>");
+		out.println("<h1>Result</h1>");
 
-		out.println("<h1>Upload contract scheme</h1>");
-		out.println("<p>Copy-and-paste the valid csv data to the text box below</p>");
+		req.getSession().setAttribute(UPDATE_RESULT_KEY, helper);
 
-		out.println("<form action=\"update\" id=\"usrform\" method=\"post\">");
-		out.println("<textarea rows=\"50\" cols=\"150\" name=\"csv\" form=\"usrform\" ></textarea>");
+		for (ProjectHelper.IssueUpdate update : helper.getUpdates()) {
+			out.println("<p>" + update.getHTMLString() + "</p>");
+		}
+
+		out.println("<form action=\"update\" method=\"get\">");
 		out.println("<p><input type=\"submit\"></p>");
 		out.println("</form>");
 
 		out.println("</body>");
 		out.println("</html>");
-
 	}
 
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Object results = req.getSession().getAttribute(UPDATE_RESULT_KEY);
+		System.out.println("Result Key " + results);
+		ServletOutputStream out = resp.getOutputStream();
+
+		out.println("<html>");
+		out.println("<body>");
+		out.println(results.getClass().getName());
+
+		try {
+			for (ProjectHelper.IssueUpdate update : ((ProjectHelper) results).getUpdates()) {
+				out.println("<p>" + update.getHTMLString() + "</p>");
+				update.publish();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		out.println("</body>");
+		out.println("</html>");
+	}
 }
