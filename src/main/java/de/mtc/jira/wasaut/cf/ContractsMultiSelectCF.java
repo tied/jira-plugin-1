@@ -1,4 +1,4 @@
-package mtc.jira.contracts.cf;
+package de.mtc.jira.wasaut.cf;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 
-import mtc.jira.contracts.CSVParser;
+import de.mtc.jira.wasaut.CSVParser;
 
 @Scanned
 public class ContractsMultiSelectCF extends GenericTextCFType {
@@ -50,7 +50,7 @@ public class ContractsMultiSelectCF extends GenericTextCFType {
 		Map<String, List<String>> map = new HashMap<>();
 		System.out.println("I AM RUNNING");
 		try {
-			List<String> results = new ArrayList<>(CSVParser.getDataFromFile().keySet());
+			List<String> results = new ArrayList<>(CSVParser.getData().keySet());
 			map.put("result", results);
 		} catch (IOException e) {
 			e.printStackTrace();

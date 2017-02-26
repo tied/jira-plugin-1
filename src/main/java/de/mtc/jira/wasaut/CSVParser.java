@@ -1,4 +1,4 @@
-package mtc.jira.contracts;
+package de.mtc.jira.wasaut;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,16 +22,27 @@ public class CSVParser {
 	private static String FILE_PREFIX = "contract-data";
 	private static String FILE_EXT = ".tmp";
 
-	public static Map<String, CSVEntry> getDataFromFile() throws IOException, WorkflowException {
+	public static Map<String, CSVEntry> getData() throws IOException, WorkflowException {
+		Map<String, CSVEntry> result = PluginCache.getData();
+		if(result == null) {
+			result = getDataFromFile();
+		}
+		return result;
+	}
+	
+	private static Map<String, CSVEntry> getDataFromFile() throws IOException, WorkflowException {
 		InputStream in = new FileInputStream(findFile());
 		try (BufferedReader read = new BufferedReader(new InputStreamReader(in))) {
 			return readData(read.lines().collect(Collectors.toList()));
 		}
 	}
+
+	public static Map<String, CSVEntry> readDataFromString(String str) throws WorkflowException {
+		return readData(Arrays.asList(str.split("\n")));
+	}
 	
-	
-	public static Map<String, CSVEntry> readData(List<String> lines) throws WorkflowException {
-		Map<String, CSVEntry> result = new HashMap<>();
+	private static Map<String, CSVEntry> readData(List<String> lines) throws WorkflowException {
+		Map<String, CSVEntry> result = new LinkedHashMap<>();
 		for (int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
 			if (i == 0) {
@@ -75,10 +86,6 @@ public class CSVParser {
 		result.put(parts[1], entry);
 	}
 
-	public static Map<String, CSVEntry> getDataFromString(String str) {
-		return readData(Arrays.asList(str.split("\n")));
-	}
-
 	private static File findFile() throws WorkflowException {
 		if (CSV_FILE == null) {
 			CSV_FILE = findDataPath();
@@ -119,6 +126,9 @@ public class CSVParser {
 	public static void setCSVPath(String csv) {
 		CSV_FILE = csv;
 	}
+
+	
+	
 	
 	public static void main(String[] args) throws IOException {
 		String path = "C:\\Users\\EMJVK\\Downloads\\BBS_Contracts_2017_02_16.csv";

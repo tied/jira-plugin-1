@@ -1,4 +1,4 @@
-package mtc.jira.contracts.workflow;
+package de.mtc.jira.wasaut.workflow;
 
 import java.io.IOException;
 import java.util.Map;
@@ -11,9 +11,9 @@ import com.atlassian.jira.workflow.function.issue.AbstractJiraFunctionProvider;
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.workflow.WorkflowException;
 
-import mtc.jira.contracts.CSVEntry;
-import mtc.jira.contracts.CSVParser;
-import mtc.jira.contracts.ProjectHelper;
+import de.mtc.jira.wasaut.CSVEntry;
+import de.mtc.jira.wasaut.CSVParser;
+import de.mtc.jira.wasaut.ProjectHelper;
 
 public class CreateIssuePostFunction extends AbstractJiraFunctionProvider {
 
@@ -26,7 +26,7 @@ public class CreateIssuePostFunction extends AbstractJiraFunctionProvider {
 		MutableIssue issue = getIssue(transientVars);
 		
 		try {
-			Map<String, CSVEntry> data = CSVParser.getDataFromFile();
+			Map<String, CSVEntry> data = CSVParser.getData();
 			ProjectHelper helper = new ProjectHelper();
 			helper.initFields(issue, data);
 			return;

@@ -1,4 +1,4 @@
-package mtc.jira.contracts.servlet;
+package de.mtc.jira.wasaut.servlet;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package mtc.jira.contracts.servlet;
+package de.mtc.jira.wasaut.servlet;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -13,10 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.opensymphony.workflow.WorkflowException;
 
-import mtc.jira.contracts.CSVEntry;
-import mtc.jira.contracts.CSVParser;
-import mtc.jira.contracts.MessageHandler;
-import mtc.jira.contracts.ProjectHelper;
+import de.mtc.jira.wasaut.CSVEntry;
+import de.mtc.jira.wasaut.CSVParser;
+import de.mtc.jira.wasaut.Message;
+import de.mtc.jira.wasaut.MessageHandler;
+import de.mtc.jira.wasaut.PluginCache;
+import de.mtc.jira.wasaut.ProjectHelper;
 
 public class UpdateServlet extends HttpServlet {
 
@@ -29,6 +31,8 @@ public class UpdateServlet extends HttpServlet {
 
 		String csv = req.getParameter("csv");
 
+		Map<String, CSVEntry> data = CSVParser.readDataFromString(csv);
+		
 		Exception ex = null;
 		ServletOutputStream out = resp.getOutputStream();
 
@@ -55,7 +59,9 @@ public class UpdateServlet extends HttpServlet {
 		}
 		ex = null;
 
-		Map<String, CSVEntry> data = CSVParser.getDataFromFile();
+
+		PluginCache.setData(data);
+		
 		ProjectHelper helper = new ProjectHelper();
 
 		try {
@@ -64,22 +70,9 @@ public class UpdateServlet extends HttpServlet {
 			out.println(e.getMessage());
 		}
 
-		MessageHandler handler = helper.getMessageHandler();
-		out.println("<h1>Errors</h1>");
-		for (String msg : handler.getErrors()) {
-			out.println(msg);
-		}
-		out.println("<h1>Warnings</h1>");
-		for (String msg : handler.getErrors()) {
-			out.println(msg);
-		}
-		out.println("<h1>Infos</h1>");
-		for (String msg : handler.getErrors()) {
-			out.println(msg);
-		}
-
 		out.println("<h1>Result</h1>");
-
+		printMessages(helper, out);
+		
 		req.getSession().setAttribute(UPDATE_RESULT_KEY, helper);
 
 		for (ProjectHelper.IssueUpdate update : helper.getUpdates()) {
@@ -87,7 +80,7 @@ public class UpdateServlet extends HttpServlet {
 		}
 
 		out.println("<form action=\"update\" method=\"get\">");
-		out.println("<p><input type=\"submit\"></p>");
+		out.println("<p><input type=\"submit\" value=\"Commit Changes\"></p>");
 		out.println("</form>");
 
 		out.println("</body>");
@@ -115,5 +108,38 @@ public class UpdateServlet extends HttpServlet {
 
 		out.println("</body>");
 		out.println("</html>");
+	}
+
+	private void printMessages(ProjectHelper helper, ServletOutputStream out) throws IOException {
+		
+		MessageHandler handler = helper.getMessageHandler();
+		
+		out.println("<h3>Errors</h3>");
+
+		if(handler.getErrors().isEmpty()) {
+			out.println("No errors");
+		} else {
+			for (Message msg : handler.getErrors()) {
+			out.println("<p>" + msg.toString(true) + "</p>");
+			}
+		}
+		
+		out.println("<h3>Warnings</h3>");
+		if(handler.getWarnings().isEmpty()) {
+			out.println("No warnings");
+		} else {
+			for (Message msg : handler.getWarnings()) {
+			out.println("<p>" + msg.toString(true) + "</p>");
+			}
+		}
+		
+		out.println("<h3>Infos</h3>");
+		if(handler.getInfos().isEmpty()) {
+			out.println("No infos");
+		} else {
+			for (Message msg : handler.getInfos()) {
+			out.println("<p>" + msg.toString(true) + "</p>");
+			}
+		}
 	}
 }

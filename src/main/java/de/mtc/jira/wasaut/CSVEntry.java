@@ -1,4 +1,4 @@
-package mtc.jira.contracts;
+package de.mtc.jira.wasaut;
 
 import java.util.HashMap;
 import java.util.Map;

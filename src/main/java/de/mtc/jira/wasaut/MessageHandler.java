@@ -1,36 +1,37 @@
-package mtc.jira.contracts;
+package de.mtc.jira.wasaut;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MessageHandler {
 
-	private List<String> errors = new ArrayList<>();
-	private List<String> warnings = new ArrayList<>();
-	private List<String> infos = new ArrayList<>();
+	private List<Message> errors = new ArrayList<>();
+	private List<Message> warnings = new ArrayList<>();
+	private List<Message> infos = new ArrayList<>();
 	
-	public void error(String message) {
+	public void error(Message message) {
 		errors.add(message);
 	}
 	
-	public void warn(String message) {
+	public void warn(Message message) {
 		warnings.add(message);
 	}
 	
-	public void info(String message) {
+	public void info(Message message) {
 		infos.add(message);
 	}
 	
-	public List<String> getInfos() {
+	public List<Message> getInfos() {
 		return infos;
 	}
 	
-	public List<String> getWarnings() {
+	public List<Message> getWarnings() {
 		return warnings;
 	}
 	
-	public List<String> getErrors() {
+	public List<Message> getErrors() {
 		return errors;
 	}
+	
 	
 }
