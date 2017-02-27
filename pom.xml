@@ -11,7 +11,7 @@
 		<url>http://developer.atlassian.com/</url>
 	</organization>
 	<name>de.mtc.wasaut</name>
-	<description>This is the com.atlassian.tutorial:myPlugin plugin for Atlassian JIRA.</description>
+	<description>Automates field management for WASAUT project.</description>
 	<packaging>atlassian-plugin</packaging>
 	<dependencies>
 		<dependency>
