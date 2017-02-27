@@ -1,8 +1,6 @@
 package de.mtc.jira.wasaut;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +9,6 @@ import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.event.issue.AbstractIssueEventListener;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.issue.Issue;
-import com.opensymphony.workflow.WorkflowException;
 
 public class IssueUpdateListener extends AbstractIssueEventListener {
 

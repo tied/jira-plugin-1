@@ -33,8 +33,7 @@
 
 	<servlet name="Upload file servlet" key="upload servlet"
 		class="de.mtc.jira.wasaut.servlet.UploadServlet">
-		<description>Uploads the contract structure data for WASAUT project.
-		</description>
+		<description>Uploads the contract structure data for WASAUT project.</description>
 		<url-pattern>/upload</url-pattern>
 	</servlet>
 	<servlet name="Update project servlet" key="update servlet"

@@ -1,8 +1,6 @@
 package de.mtc.jira.wasaut;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,12 +15,9 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.ModifiedValue;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.fields.CustomField;
-import com.atlassian.jira.issue.issuetype.IssueType;
 import com.atlassian.jira.issue.search.SearchException;
 import com.atlassian.jira.issue.search.SearchResults;
 import com.atlassian.jira.issue.util.DefaultIssueChangeHolder;
-import com.atlassian.jira.project.Project;
-import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.user.ApplicationUser;
 import com.opensymphony.workflow.WorkflowException;
 
@@ -38,7 +33,8 @@ public class ProjectHelper {
 	}
 
 	public void getProjectUpdates(Map<String, CSVEntry> data) throws WorkflowException {
-		List<Issue> issues = getIssuesForProject(PluginConstants.PROJECTS);
+		ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+		List<Issue> issues = getRelevantIssues(currentUser);
 		for (Issue issue : issues) {
 			log.debug("Checking " + issue.getKey());
 			try {
@@ -69,7 +65,7 @@ public class ProjectHelper {
 		}
 		CSVEntry entries = data.get(type);
 		if (entries == null) {
-			Message message = new Message(issue, "Unknown project / contracts key: " + type);
+			Message message = new Message(issue, "Unmapped Project/Contract type: " + type);
 			messageHandler.error(message);
 			throw new WorkflowException(message.toString(false));
 		}
@@ -87,62 +83,38 @@ public class ProjectHelper {
 		}
 	}
 
-	public List<Issue> getIssuesForProject(String[] projectKeys) throws WorkflowException {
 
-		log.debug("Getting issues for project " + projectKeys);
-
+	
+	private List<Issue> getRelevantIssues(ApplicationUser currentUser) throws WorkflowException {
+		String jqlQuery = PluginCache.getJqlQuery();
 		List<Issue> result = new ArrayList<>();
 		SearchService searchService = ComponentAccessor.getComponentOfType(SearchService.class);
-		ProjectManager projectManager = ComponentAccessor.getProjectManager();
-		ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
-
-		for (String projectKey : projectKeys) {
-			result.addAll(getIssueByProjectKey(projectKey, searchService, projectManager, currentUser));
-		}
-
-		Message message = new Message(null,
-				"Found " + result.size() + " issues for project(s) " + Arrays.toString(projectKeys));
-		messageHandler.info(message);
-		log.debug(message.toString(false));
-
-		return result;
-	}
-
-	private List<Issue> getIssueByProjectKey(String projectKey, SearchService searchService,
-			ProjectManager projectManager, ApplicationUser currentUser) throws WorkflowException {
-		List<Issue> result = new ArrayList<>();
-		Project project = projectManager.getProjectByCurrentKey(projectKey);
-
-		Collection<IssueType> issueTypes = project.getIssueTypes();
-
-		for (IssueType issueType : issueTypes) {
-			String jqlQuery = "project = '" + project.getKey() + "' and status != 'Closed' and issuetype='"
-					+ issueType.getName() + "'";
-			final SearchService.ParseResult parseResult = searchService.parseQuery(currentUser, jqlQuery);
-
-			log.debug("Executing jql Query: " + jqlQuery);
-
-			if (parseResult.isValid()) {
-				SearchResults results = null;
-				try {
-					results = searchService.search(currentUser, parseResult.getQuery(),
-							new com.atlassian.jira.web.bean.PagerFilter<>());
-				} catch (SearchException e) {
-					Message message = new Message(null, "Unable to get search results for project " + projectKey);
-					messageHandler.error(message);
-				}
-				if (results != null) {
-					final List<Issue> issues = results.getIssues();
-					log.debug("Result " + issues.stream().map(t -> t.getKey()).collect(Collectors.joining(",")));
-					result.addAll(issues);
-				}
-			} else {
-				log.debug("Search result not valid");
+		SearchService.ParseResult parseResult = searchService.parseQuery(currentUser, jqlQuery);
+		if (parseResult.isValid()) {
+			SearchResults results = null;
+			try {
+				results = searchService.search(currentUser, parseResult.getQuery(),
+						new com.atlassian.jira.web.bean.PagerFilter<>());
+			} catch (SearchException e) {
+				Message message = new Message(null, "JQL Error for " + parseResult.getQuery());
+				messageHandler.error(message);
+				log.debug(message.toString(false));
+				log.debug(e.getMessage());
 			}
+			if (results != null) {
+				final List<Issue> issues = results.getIssues();
+				result.addAll(issues);
+				String issueList = issues.stream().map(t -> t.getKey()).collect(Collectors.joining(","));
+				log.debug("Result " + issueList);
+			}
+		} else {
+			log.debug("Search result not valid " + parseResult.getErrors());
 		}
 		return result;
+		
 	}
-
+	
+	
 	private void setFieldValues(Issue issue, Map<String, CSVEntry> data, boolean update) throws WorkflowException {
 		log.debug(new Message(issue, "Initializing custom fields").toString(false));
 		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);

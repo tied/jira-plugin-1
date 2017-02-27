@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.mtc.jira.wasaut.PluginCache;
+
 public class UploadServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -31,7 +33,8 @@ public class UploadServlet extends HttpServlet {
 		out.println("<p>Copy-and-paste the valid csv data to the text box below</p>");
 
 		out.println("<form action=\"update\" id=\"usrform\" method=\"post\">");
-		out.println("<textarea rows=\"50\" cols=\"150\" name=\"csv\" form=\"usrform\" ></textarea>");
+		out.println("<p>JQL Query:<input type=\"text\" name=\"jql\" form=\"usrform\" size=\"100\" value=\"" + PluginCache.getJqlQuery() + "\"></p>");
+		out.println("<textarea rows=\"50\" cols=\"150\" name=\"csv\" form=\"usrform\" ></textarea>");		
 		out.println("<p><input type=\"submit\"></p>");
 		out.println("</form>");
 

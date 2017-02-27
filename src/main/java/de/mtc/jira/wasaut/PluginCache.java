@@ -11,6 +11,7 @@ public class PluginCache {
 	private final static Logger log = LoggerFactory.getLogger(PluginCache.class);
 	
 	private static Map<String, CSVEntry> data;
+	private static String jqlQuery;
 		
 	public static void setData(Map<String, CSVEntry> pData) {
 		log.debug("Caching data on");
@@ -23,5 +24,13 @@ public class PluginCache {
 
 	public static Collection<String> getOptions() {
 		return data.keySet();
+	}
+	
+	public static String getJqlQuery() {
+		return jqlQuery != null ? jqlQuery : PluginConstants.DEFAULT_QUERY;
+	}
+	
+	public static void setJqlQuery(String jqlQuery) {
+		PluginCache.jqlQuery = jqlQuery;
 	}
 }

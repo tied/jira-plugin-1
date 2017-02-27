@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.customfields.impl.FieldValidationException;
 import com.atlassian.jira.issue.customfields.impl.GenericTextCFType;
 import com.atlassian.jira.issue.customfields.manager.GenericConfigManager;
 import com.atlassian.jira.issue.customfields.persistence.CustomFieldValuePersister;
@@ -35,22 +34,22 @@ public class ContractsMultiSelectCF extends GenericTextCFType {
 	}
 
 	@Override
-	public String getSingularObjectFromString(String string) throws FieldValidationException {
-		return super.getSingularObjectFromString(string);
-	}
-	
-	@Override
-	protected Object getDbValueFromObject(String customFieldObject) {
-		return super.getDbValueFromObject(customFieldObject);
+	public void updateValue(CustomField customField, Issue issue, String value) {
+		super.updateValue(customField, issue, value);
+		System.out.println(customField.getName() + " " + issue.getKey() + " was updated to value " + value);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Map getVelocityParameters(Issue issue, CustomField field, FieldLayoutItem fieldLayoutItem) {
 		Map<String, List<String>> map = new HashMap<>();
-		System.out.println("I AM RUNNING");
 		try {
-			List<String> results = new ArrayList<>(CSVParser.getData().keySet());
+			String value = (String)issue.getCustomFieldValue(field);
+			List<String> results = new ArrayList<>();
+			if(value != null) {
+				results.add(value);
+			}
+			results.addAll(CSVParser.getData().keySet());
 			map.put("result", results);
 		} catch (IOException e) {
 			e.printStackTrace();

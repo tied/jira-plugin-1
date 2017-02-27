@@ -1,7 +1,6 @@
 package de.mtc.jira.wasaut.servlet;
 
-import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
@@ -10,6 +9,10 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.opensymphony.workflow.WorkflowException;
 
@@ -24,56 +27,58 @@ public class UpdateServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	private String UPDATE_RESULT_KEY = "___result___";
+	private final static String UPDATE_RESULT_KEY = "___result___";
+	private final static String FORM_DATA_KEY = "___formData___";
+	private final static String INPUT_DATA_KEY = "___input____";
+
+	private final static Logger log = LoggerFactory.getLogger(UpdateServlet.class);
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		String csv = req.getParameter("csv");
+		String formData = req.getParameter("csv");
+		String jql = req.getParameter("jql");
 
-		Map<String, CSVEntry> data = CSVParser.readDataFromString(csv);
-		
-		Exception ex = null;
+		Map<String, CSVEntry> inputData = CSVParser.readDataFromString(formData);
+
 		ServletOutputStream out = resp.getOutputStream();
-
-		File temp = File.createTempFile("contract-data", ".tmp");
 
 		out.println("<html>");
 		out.println("<body>");
-		out.println("<br> " + temp.getAbsolutePath() + " " + temp.canWrite());
-		CSVParser.setCSVPath(temp.getAbsolutePath());
 
-		try (FileWriter writer = new FileWriter(temp)) {
-			writer.write(csv);
-		} catch (Exception e) {
-			ex = e;
-			out.println("<br>Failed to write on " + temp.getAbsolutePath());
-			out.println("<br>Exception: " + e.getMessage());
-			for (StackTraceElement el : e.getStackTrace()) {
-				out.println("<br>" + el.getFileName() + "." + el.getMethodName() + "." + el.getLineNumber());
-				return;
-			}
+		Map<String, CSVEntry> oldData = null;
+		try {
+			oldData = CSVParser.getDataFromFile();
+		} catch (FileNotFoundException e) {
+			out.println("<p>Couldn't find any stored data, this seems to be an initial commit.</p>");
 		}
-		if (ex == null) {
-			out.println("<br>Wrote to file " + temp.getAbsolutePath());
+
+		if(jql != null && !jql.equals(PluginCache.getJqlQuery())) {
+			PluginCache.setJqlQuery(jql);
 		}
-		ex = null;
-
-
-		PluginCache.setData(data);
+				
+		out.println("<p>Query: " + PluginCache.getJqlQuery() + "</p>");
 		
+		out.println("<p>Found stored data: " + CSVParser.getDataPath() + "</p>");
+		
+		PluginCache.setData(inputData);
+
 		ProjectHelper helper = new ProjectHelper();
 
 		try {
-			helper.getProjectUpdates(data);
+			helper.getProjectUpdates(inputData);
 		} catch (WorkflowException e) {
 			out.println(e.getMessage());
 		}
 
 		out.println("<h1>Result</h1>");
 		printMessages(helper, out);
-		
-		req.getSession().setAttribute(UPDATE_RESULT_KEY, helper);
+
+		HttpSession session = req.getSession();
+
+		session.setAttribute(UPDATE_RESULT_KEY, helper);
+		session.setAttribute(FORM_DATA_KEY, formData);
+		session.setAttribute(INPUT_DATA_KEY, inputData);
 
 		for (ProjectHelper.IssueUpdate update : helper.getUpdates()) {
 			out.println("<p>" + update.getHTMLString() + "</p>");
@@ -89,8 +94,8 @@ public class UpdateServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Object results = req.getSession().getAttribute(UPDATE_RESULT_KEY);
-		System.out.println("Result Key " + results);
+		HttpSession session = req.getSession();
+		Object results = session.getAttribute(UPDATE_RESULT_KEY);
 		ServletOutputStream out = resp.getOutputStream();
 
 		out.println("<html>");
@@ -99,11 +104,26 @@ public class UpdateServlet extends HttpServlet {
 
 		try {
 			for (ProjectHelper.IssueUpdate update : ((ProjectHelper) results).getUpdates()) {
-				out.println("<p>" + update.getHTMLString() + "</p>");
 				update.publish();
+				out.println("<p>Published: " + update.getHTMLString() + "</p>");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+
+		try {
+			PluginCache.setData((Map<String, CSVEntry>) session.getAttribute(INPUT_DATA_KEY));
+			out.println("<p>Cached data</p>");
+		} catch (Exception e) {
+			out.println("<p style=\"color:red;\">Error caching data: " + e.getMessage() + "</p>");
+			log.error("Failed to cache data ", e);
+		}
+
+		try {
+			CSVParser.writeCSVFile((String) session.getAttribute(FORM_DATA_KEY));
+		} catch (Exception e) {
+			out.println("<p style=\"color:red;\">Error caching data: " + e.getMessage() + "</p>");
+			log.error("Failed " + e);
 		}
 
 		out.println("</body>");
@@ -111,34 +131,32 @@ public class UpdateServlet extends HttpServlet {
 	}
 
 	private void printMessages(ProjectHelper helper, ServletOutputStream out) throws IOException {
-		
+
 		MessageHandler handler = helper.getMessageHandler();
-		
+
 		out.println("<h3>Errors</h3>");
 
-		if(handler.getErrors().isEmpty()) {
+		if (handler.getErrors().isEmpty()) {
 			out.println("No errors");
 		} else {
 			for (Message msg : handler.getErrors()) {
-			out.println("<p>" + msg.toString(true) + "</p>");
+				out.println("<p>" + msg.toString(true) + "</p>");
 			}
 		}
-		
 		out.println("<h3>Warnings</h3>");
-		if(handler.getWarnings().isEmpty()) {
+		if (handler.getWarnings().isEmpty()) {
 			out.println("No warnings");
 		} else {
 			for (Message msg : handler.getWarnings()) {
-			out.println("<p>" + msg.toString(true) + "</p>");
+				out.println("<p>" + msg.toString(true) + "</p>");
 			}
 		}
-		
 		out.println("<h3>Infos</h3>");
-		if(handler.getInfos().isEmpty()) {
+		if (handler.getInfos().isEmpty()) {
 			out.println("No infos");
 		} else {
 			for (Message msg : handler.getInfos()) {
-			out.println("<p>" + msg.toString(true) + "</p>");
+				out.println("<p>" + msg.toString(true) + "</p>");
 			}
 		}
 	}
