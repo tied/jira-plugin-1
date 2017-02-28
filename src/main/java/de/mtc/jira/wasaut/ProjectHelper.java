@@ -59,13 +59,13 @@ public class ProjectHelper {
 		CustomField typeField = opField.get();
 		String type = (String) issue.getCustomFieldValue(typeField);
 		if (type == null || type.isEmpty()) {
-			Message message = new Message(issue, "Project key is missing");
+			Message message = new Message(issue, "Project/Contract key is missing");
 			messageHandler.error(message);
 			throw new WorkflowException(message.toString(false));
 		}
 		CSVEntry entries = data.get(type);
 		if (entries == null) {
-			Message message = new Message(issue, "Unmapped Project/Contract type: " + type);
+			Message message = new Message(issue, "Unknown Project/Contract type: " + type);
 			messageHandler.error(message);
 			throw new WorkflowException(message.toString(false));
 		}

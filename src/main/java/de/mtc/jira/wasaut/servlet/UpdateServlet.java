@@ -2,6 +2,7 @@ package de.mtc.jira.wasaut.servlet;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.component.ComponentAccessor;
 import com.opensymphony.workflow.WorkflowException;
 
 import de.mtc.jira.wasaut.CSVEntry;
@@ -36,12 +38,18 @@ public class UpdateServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
+		ServletOutputStream out = resp.getOutputStream();
+
+		if (!ComponentAccessor.getJiraAuthenticationContext().isLoggedInUser()) {
+			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			out.println("<p>Please log in to jira.mtc.berlin first</p>");
+			return;
+		}
+
 		String formData = req.getParameter("csv");
 		String jql = req.getParameter("jql");
 
 		Map<String, CSVEntry> inputData = CSVParser.readDataFromString(formData);
-
-		ServletOutputStream out = resp.getOutputStream();
 
 		out.println("<html>");
 		out.println("<body>");
@@ -53,13 +61,13 @@ public class UpdateServlet extends HttpServlet {
 			out.println("<p>Couldn't find any stored data, this seems to be an initial commit.</p>");
 		}
 
-		if(jql != null && !jql.equals(PluginCache.getJqlQuery())) {
+		if (jql != null && !jql.equals(PluginCache.getJqlQuery())) {
 			PluginCache.setJqlQuery(jql);
 		}
-				
+
 		out.println("<p>Query: " + PluginCache.getJqlQuery() + "</p>");
 		out.println("<p>Found stored data: " + CSVParser.getDataFile().getAbsolutePath() + "</p>");
-		
+
 		PluginCache.setData(inputData);
 
 		ProjectHelper helper = new ProjectHelper();
@@ -99,14 +107,26 @@ public class UpdateServlet extends HttpServlet {
 
 		out.println("<html>");
 		out.println("<body>");
-		out.println(results.getClass().getName());
+
+		List<ProjectHelper.IssueUpdate> updates = null;
 
 		try {
-			for (ProjectHelper.IssueUpdate update : ((ProjectHelper) results).getUpdates()) {
+			updates = ((ProjectHelper) results).getUpdates();
+		} catch (Exception e) {
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			out.println("<p>No update results for this session</p>");
+			return;
+		}
+		
+		out.println("<h2>Commited " + updates.size() + " issues</h2>");
+
+		try {
+			for (ProjectHelper.IssueUpdate update : updates) {
 				update.publish();
-				out.println("<p>Published: " + update.getHTMLString() + "</p>");
+				out.println("<p>" + update.getHTMLString() + "</p>");
 			}
 		} catch (Exception e) {
+			out.println("<p>Error " + e.getMessage() + "</p>");
 			e.printStackTrace();
 		}
 
@@ -133,27 +153,22 @@ public class UpdateServlet extends HttpServlet {
 
 		MessageHandler handler = helper.getMessageHandler();
 
-		out.println("<h3>Errors</h3>");
-
-		if (handler.getErrors().isEmpty()) {
-			out.println("No errors");
-		} else {
+		if (!handler.getErrors().isEmpty()) {
+			out.println("<h3>Errors</h3>");
 			for (Message msg : handler.getErrors()) {
 				out.println("<p>" + msg.toString(true) + "</p>");
 			}
 		}
-		out.println("<h3>Warnings</h3>");
-		if (handler.getWarnings().isEmpty()) {
-			out.println("No warnings");
-		} else {
+
+		if (!handler.getWarnings().isEmpty()) {
+			out.println("<h3>Warnings</h3>");
 			for (Message msg : handler.getWarnings()) {
 				out.println("<p>" + msg.toString(true) + "</p>");
 			}
 		}
-		out.println("<h3>Infos</h3>");
-		if (handler.getInfos().isEmpty()) {
-			out.println("No infos");
-		} else {
+
+		if (!handler.getInfos().isEmpty()) {
+			out.println("<h3>Infos</h3>");
 			for (Message msg : handler.getInfos()) {
 				out.println("<p>" + msg.toString(true) + "</p>");
 			}

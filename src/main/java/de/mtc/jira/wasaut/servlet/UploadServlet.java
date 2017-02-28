@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.atlassian.jira.component.ComponentAccessor;
+
 import de.mtc.jira.wasaut.PluginCache;
 
 public class UploadServlet extends HttpServlet {
@@ -16,7 +18,16 @@ public class UploadServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		getTextArea(resp.getOutputStream());
+		
+		ServletOutputStream out = resp.getOutputStream();
+		
+		if(!ComponentAccessor.getJiraAuthenticationContext().isLoggedInUser()) {
+			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			out.println("<p>Please log in to jira.mtc.berlin first</p>");
+			return;
+		}
+		
+		getTextArea(out);
 	}
 
 	@Override
