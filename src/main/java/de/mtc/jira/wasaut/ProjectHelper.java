@@ -189,6 +189,7 @@ public class ProjectHelper {
 			}
 			customField.updateValue(null, iss, new ModifiedValue<Object>(oldValue, newValue),
 					new DefaultIssueChangeHolder());
+			
 			iss.store();
 
 			Object newFieldValue = customField.getValue(iss);

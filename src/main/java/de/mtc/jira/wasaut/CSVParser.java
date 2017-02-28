@@ -15,12 +15,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.jfree.util.Log;
+
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.config.util.JiraHome;
 import com.atlassian.jira.workflow.WorkflowException;
 
 public class CSVParser {
 
-	private final static String DATA_FILE = "/var/atlassian/application-data/jira/data/wasaut.csv";
-
+	private final static String CSV_FILE_NAME = "wasaut.csv";
+	
 	public static Map<String, CSVEntry> getData() throws IOException, WorkflowException {
 		Map<String, CSVEntry> result = PluginCache.getData();
 		if (result == null) {
@@ -30,9 +34,9 @@ public class CSVParser {
 	}
 
 	public static Map<String, CSVEntry> getDataFromFile() throws IOException, WorkflowException {
-		File file = new File(DATA_FILE);
+		File file = getDataFile();
 		if (!file.exists()) {
-			throw new FileNotFoundException(DATA_FILE + " does not exist");
+			throw new FileNotFoundException(file.getAbsolutePath() + " does not exist");
 		}
 		InputStream in = new FileInputStream(file);
 		try (BufferedReader read = new BufferedReader(new InputStreamReader(in))) {
@@ -56,10 +60,15 @@ public class CSVParser {
 		}
 		return result;
 	}
+	
+	public static File getDataFile() {
+		File dataFolder = ComponentAccessor.getComponent(JiraHome.class).getDataDirectory();
+		Log.debug("Found data folder " + dataFolder);
+		return new File(dataFolder, CSV_FILE_NAME);
+	}
 
 	public static void writeCSVFile(String csv) throws IOException {
-		File file = new File(DATA_FILE);
-		try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+		try(BufferedWriter writer = new BufferedWriter(new FileWriter(getDataFile()))) {
 			writer.write(csv);
 		}
 	}
@@ -92,56 +101,8 @@ public class CSVParser {
 		for (int i = 2; i < parts.length; i++) {
 			entry.put(PluginConstants.CF_FIELDS_NAMES[i], parts[i]);
 		}
-
 		result.put(parts[1], entry);
 	}
-
-	public static String getDataPath() {
-		return DATA_FILE;
-	}
-	
-	
-	// private static File findFile() throws WorkflowException {
-	// if (CSV_FILE == null) {
-	// CSV_FILE = findDataPath();
-	// }
-	// File file = new File(CSV_FILE);
-	// if (!file.exists()) {
-	// throw new WorkflowException("File " + file.getAbsolutePath() + " does not
-	// exist");
-	// }
-	// return file;
-	// }
-	//
-	// private static String findDataPath() throws WorkflowException {
-	// File folder;
-	// try {
-	// // Just test if you can access the temp folder
-	// folder = File.createTempFile("xy", "tmp").getParentFile();
-	// } catch (IOException e) {
-	// throw new WorkflowException("Cannot write to temporary folder");
-	// }
-	// File[] files = folder.listFiles(new FilenameFilter() {
-	// @Override
-	// public boolean accept(File dir, String name) {
-	// return name.startsWith(FILE_PREFIX) && name.endsWith(FILE_EXT);
-	// }
-	// });
-	// if (files != null && files.length > 0) {
-	// Arrays.sort(files, new Comparator<File>() {
-	// @Override
-	// public int compare(File o1, File o2) {
-	// return Long.compare(o1.lastModified(), o2.lastModified());
-	// }
-	// });
-	// return files[files.length - 1].getAbsolutePath();
-	// }
-	// throw new WorkflowException("Unable to find data file");
-	// }
-
-//	public static void setCSVPath(String csv) {
-//		CSV_FILE = csv;
-//	}
 
 	public static void main(String[] args) throws IOException {
 		String path = "C:\\Users\\EMJVK\\Downloads\\BBS_Contracts_2017_02_16.csv";

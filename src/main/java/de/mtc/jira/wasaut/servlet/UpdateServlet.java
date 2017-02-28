@@ -58,8 +58,7 @@ public class UpdateServlet extends HttpServlet {
 		}
 				
 		out.println("<p>Query: " + PluginCache.getJqlQuery() + "</p>");
-		
-		out.println("<p>Found stored data: " + CSVParser.getDataPath() + "</p>");
+		out.println("<p>Found stored data: " + CSVParser.getDataFile().getAbsolutePath() + "</p>");
 		
 		PluginCache.setData(inputData);
 
