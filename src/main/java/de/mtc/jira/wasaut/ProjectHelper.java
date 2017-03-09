@@ -59,13 +59,13 @@ public class ProjectHelper {
 		CustomField typeField = opField.get();
 		String type = (String) issue.getCustomFieldValue(typeField);
 		if (type == null || type.isEmpty()) {
-			Message message = new Message(issue, "Project/Contract key is missing");
+			Message message = new Message(issue, "The value for the \"Project/Contract\" field is not set");
 			messageHandler.error(message);
 			throw new WorkflowException(message.toString(false));
 		}
 		CSVEntry entries = data.get(type);
 		if (entries == null) {
-			Message message = new Message(issue, "Unknown Project/Contract type: " + type);
+			Message message = new Message(issue, "The value " + type + " for the \"Project/Contract\" field is deprecated or invalid");
 			messageHandler.error(message);
 			throw new WorkflowException(message.toString(false));
 		}
@@ -169,6 +169,7 @@ public class ProjectHelper {
 		private String newValue;
 		private CustomField customField;
 		private Issue issue;
+		private Exception exception;
 
 		public IssueUpdate(Issue issue, CustomField customField, Object oldValue, String newValue) {
 			this.issue = issue;
@@ -176,6 +177,32 @@ public class ProjectHelper {
 			this.oldValue = oldValue;
 			this.newValue = newValue;
 		}
+		
+		
+		public Object getOldValue() {
+			return oldValue;
+		}
+		
+		public String getNewValue() {
+			return newValue;
+		}
+		
+		public CustomField getCustomField() {
+			return customField;
+		}
+		
+		public Issue getIssue() {
+			return issue;
+		}
+		
+		public Exception getException() {
+			return exception;
+		}
+		
+		public void setException(Exception error) {
+			this.exception = error;
+		}
+
 
 		public void publish() {
 			log.debug(new Message(issue, customField, "Publishing...").toString(false));
@@ -215,6 +242,12 @@ public class ProjectHelper {
 			sb.append(oldValue + " to " + newValue);
 
 			return sb.toString();
+		}
+		
+		
+		public String getIssueLink() {
+			return ComponentAccessor.getApplicationProperties().getString("jira.baseurl") + "/browse/"
+					+ issue.getKey();
 		}
 	}
 }

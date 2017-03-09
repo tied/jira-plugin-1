@@ -1,0 +1,9 @@
+<div style="margin-left:50px;margin-top:50px">
+<h2>Upload contract meta data</h2>
+Copy and paste the valid csv data into the text box below
+<form action="$requestContext.baseUrl/secure/WasautUpload.jspa" id="usrform" method="post">
+	<p>JQL Query:<input type="text" name="jqlQuery" form="usrform" size="100" value="$jqlQuery"></p>
+	<textarea rows="50" cols="150" name="csv" form="usrform" ></textarea>);
+	<p><input type="submit"/></p>
+</form>
+</div>

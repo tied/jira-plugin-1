@@ -1,0 +1,25 @@
+<div style="margin-left:50px;margin-top:50px">
+<h2>The following updates were performed</h2>
+
+#foreach($update in $succeededUpdates) 
+	#set($old = $update.getOldValue())
+	#if( ! $old ) 
+		#set($old = "null")
+	#end
+	<a href ="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field 
+	<tt>$update.getCustomField().getName()</tt> changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
+	<br>
+#end
+
+<h2>The following errors occured</h2>
+
+#foreach($update in $failedUpdates) 
+	#set($old = $update.getOldValue())
+	#if( ! $old ) 
+		#set($old = "null")
+	#end
+	<a href ="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field 
+	<tt>$update.getCustomField().getName()</tt> changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
+	<br>
+#end
+</div>

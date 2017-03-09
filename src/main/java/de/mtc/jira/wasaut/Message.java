@@ -39,4 +39,16 @@ public class Message {
 		return sb.toString();
 	}
 
+	public Issue getIssue() {
+		return issue;
+	}
+	
+	public CustomField getCustomField() {
+		return customField;
+	}
+	
+	public String getMessage() {
+		return message;
+	}
+	
 }

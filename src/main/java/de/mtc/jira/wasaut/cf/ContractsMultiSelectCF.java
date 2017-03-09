@@ -36,12 +36,12 @@ public class ContractsMultiSelectCF extends GenericTextCFType {
 	@Override
 	public void updateValue(CustomField customField, Issue issue, String value) {
 		super.updateValue(customField, issue, value);
-		System.out.println(customField.getName() + " " + issue.getKey() + " was updated to value " + value);
 	}
-	
+		
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Map getVelocityParameters(Issue issue, CustomField field, FieldLayoutItem fieldLayoutItem) {
+		System.out.println("Getting params!");
 		Map<String, List<String>> map = new HashMap<>();
 		try {
 			String value = (String)issue.getCustomFieldValue(field);

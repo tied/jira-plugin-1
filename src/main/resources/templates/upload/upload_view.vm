@@ -1,0 +1,34 @@
+<div style="margin-left:50px;margin-top:50px">
+<h2>View Changes</h2>
+
+<h3>Errors</h3>
+
+#if($messageHandler.getErrors().isEmpty())
+	No errors
+#else
+	#foreach($message in $messageHandler.getErrors())
+		#set($issue = $message.getIssue())
+		<a href ="$getIssueLink($issue)">$issue.getKey()</a>: $message.getMessage() <br>
+	#end
+#end
+
+<h2>Updates</h2>
+
+#if($issueUpdates.isEmpty())
+	<p>All issues are up to date.</p>
+#else
+	#foreach($update in $issueUpdates) 
+		#set($old = $update.getOldValue())
+		#if( ! $old ) 
+			#set($old = "null")
+		#end
+		<a href ="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field 
+		<tt>$update.getCustomField().getName()</tt> will be changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
+		<br>
+	#end
+#end
+
+<form action="$requestContext.baseUrl/secure/WasautUpload!commit.jspa" id="usrform" method="get">
+	<p><input type="submit"></p>
+</form>
+</div>
