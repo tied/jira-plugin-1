@@ -22,7 +22,7 @@ import com.atlassian.jira.user.ApplicationUser;
 
 public class ProjectHelper {
 
-	private static final Logger log = LoggerFactory.getLogger(CSVParser.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectHelper.class);
 	private List<IssueUpdate> updates = new ArrayList<>();
 
 	private MessageHandler messageHandler;
@@ -47,7 +47,7 @@ public class ProjectHelper {
 	public void checkUpdate(Issue issue, Map<String, CSVEntry> data) throws DataInputException {
 		log.debug("Checking updates for issue: " + issue.getKey());
 		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
-		customFields.stream().map(t -> t.getName()).forEach(t -> log.debug(t));
+		// customFields.stream().map(t -> t.getName()).forEach(t -> log.debug(t));
 		Optional<CustomField> opField = customFields.stream()
 				.filter(t -> t.getName().equals(PluginConstants.CF_FIELDS_NAMES[1])).findFirst();
 		if (!opField.isPresent()) {
@@ -168,7 +168,6 @@ public class ProjectHelper {
 		private String newValue;
 		private CustomField customField;
 		private Issue issue;
-		private Exception exception;
 
 		public IssueUpdate(Issue issue, CustomField customField, Object oldValue, String newValue) {
 			this.issue = issue;
@@ -193,16 +192,7 @@ public class ProjectHelper {
 		public Issue getIssue() {
 			return issue;
 		}
-		
-		public Exception getException() {
-			return exception;
-		}
-		
-		public void setException(Exception error) {
-			this.exception = error;
-		}
-
-
+				
 		public void publish() {
 			log.debug(new Message(issue, customField, "Publishing...").toString(false));
 
@@ -216,6 +206,7 @@ public class ProjectHelper {
 			customField.updateValue(null, iss, new ModifiedValue<Object>(oldValue, newValue),
 					new DefaultIssueChangeHolder());
 			
+			// TODO
 			iss.store();
 
 			Object newFieldValue = customField.getValue(iss);
@@ -229,24 +220,6 @@ public class ProjectHelper {
 				messageHandler.info(message);
 				log.debug(message.toString(false));
 			}
-		}
-
-		public String getHTMLString() {
-			StringBuilder sb = new StringBuilder();
-			String url = ComponentAccessor.getApplicationProperties().getString("jira.baseurl") + "/browse/"
-					+ issue.getKey();
-
-			sb.append("<a href=\"" + url + "\">" + issue.getKey() + "<a>: ");
-			sb.append("Field " + customField.getName() + " will be changed from ");
-			sb.append(oldValue + " to " + newValue);
-
-			return sb.toString();
-		}
-		
-		
-		public String getIssueLink() {
-			return ComponentAccessor.getApplicationProperties().getString("jira.baseurl") + "/browse/"
-					+ issue.getKey();
 		}
 	}
 }

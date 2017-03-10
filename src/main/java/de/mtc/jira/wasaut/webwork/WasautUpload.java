@@ -100,12 +100,6 @@ public class WasautUpload extends JiraWebActionSupport {
 		projectHelper = new ProjectHelper();
 		MessageHandler messageHandler = projectHelper.getMessageHandler();
 
-		try {
-			CSVParser.getDataFromFile();
-		} catch (DataInputException e) {
-			messageHandler.info(new Message(null, "No stored data file found on server, assuming an initial commit."));
-		}
-
 		if (jqlQuery != null && !jqlQuery.equals(PluginCache.getJqlQuery())) {
 			PluginCache.setJqlQuery(jqlQuery);
 		}
@@ -167,7 +161,6 @@ public class WasautUpload extends JiraWebActionSupport {
 				update.publish();
 				succeededUpdates.add(update);
 			} catch (Exception e) {
-				update.setException(e);
 				failedUpdates.add(update);
 				log.error("Unable to publish data", e);
 			}

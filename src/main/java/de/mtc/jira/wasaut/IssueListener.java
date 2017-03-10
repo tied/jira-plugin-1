@@ -15,10 +15,6 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 
-/**
- * Simple JIRA listener using the atlassian-event library and demonstrating
- * plugin lifecycle integration.
- */
 @Scanned
 @Component
 public class IssueListener implements InitializingBean, DisposableBean {
@@ -28,22 +24,11 @@ public class IssueListener implements InitializingBean, DisposableBean {
 	@ComponentImport
 	private final EventPublisher eventPublisher;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param eventPublisher
-	 *            injected {@code EventPublisher} implementation.
-	 */
 	@Autowired
 	public IssueListener(EventPublisher eventPublisher) {
 		this.eventPublisher = eventPublisher;
 	}
 
-	/**
-	 * Called when the plugin has been enabled.
-	 * 
-	 * @throws Exception
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		log.info("\n==================================\n");
@@ -52,23 +37,12 @@ public class IssueListener implements InitializingBean, DisposableBean {
 		eventPublisher.register(this);
 	}
 
-	/**
-	 * Called when the plugin is being disabled or removed.
-	 * 
-	 * @throws Exception
-	 */
 	@Override
 	public void destroy() throws Exception {
 		log.info("Plugin jira-holiday is destroyed");
 		eventPublisher.unregister(this);
 	}
 
-	/**
-	 * Receives any {@code IssueEvent}s sent by JIRA.
-	 * 
-	 * @param issueEvent
-	 *            the IssueEvent passed to us
-	 */
 	@EventListener
 	public void onIssueEvent(IssueEvent issueEvent) {
 		log.debug("Registered issue update event ... ");

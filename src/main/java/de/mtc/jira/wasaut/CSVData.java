@@ -12,7 +12,6 @@ public class CSVData {
 		this.data = data;
 	}
 	
-	
 	public String getLastChanged() {
 		return lastChanged;
 	}
