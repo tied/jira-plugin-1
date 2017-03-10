@@ -1,7 +1,6 @@
 package de.mtc.jira.wasaut.webwork;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +13,10 @@ import org.slf4j.LoggerFactory;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.opensymphony.workflow.WorkflowException;
 
 import de.mtc.jira.wasaut.CSVEntry;
 import de.mtc.jira.wasaut.CSVParser;
+import de.mtc.jira.wasaut.DataInputException;
 import de.mtc.jira.wasaut.Message;
 import de.mtc.jira.wasaut.MessageHandler;
 import de.mtc.jira.wasaut.PluginCache;
@@ -83,6 +82,7 @@ public class WasautUpload extends JiraWebActionSupport {
 				+ issue.getKey();
 	}
 	
+	
 	public String getStackTraceAsString() {
 		if (ex == null) {
 			return "An unknown exception has occured";
@@ -94,16 +94,15 @@ public class WasautUpload extends JiraWebActionSupport {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void checkUpdate() throws com.atlassian.jira.workflow.WorkflowException, IOException, WorkflowException {
+	private void checkUpdate() throws DataInputException {
 		Map<String, CSVEntry> inputData = CSVParser.readDataFromString(csv);
 
 		projectHelper = new ProjectHelper();
 		MessageHandler messageHandler = projectHelper.getMessageHandler();
 
 		try {
-			// Check if the file is present
 			CSVParser.getDataFromFile();
-		} catch (FileNotFoundException e) {
+		} catch (DataInputException e) {
 			messageHandler.info(new Message(null, "No stored data file found on server, assuming an initial commit."));
 		}
 
@@ -150,7 +149,6 @@ public class WasautUpload extends JiraWebActionSupport {
 	public String doCommit() {
 
 		Map session = ActionContext.getSession();
-		csv = (String) session.put(FORM_DATA_KEY, csv);
 		Object results = session.get(UPDATE_RESULT_KEY);
 		List<ProjectHelper.IssueUpdate> updates = null;
 

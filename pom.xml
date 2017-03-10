@@ -5,10 +5,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.atlassian.tutorial</groupId>
 	<artifactId>de.mtc.wasaut</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<organization>
-		<name>Atlassian SDK Tutorial</name>
-		<url>http://developer.atlassian.com/</url>
+		<name>MTC GmbH Berlin</name>
+		<url>http://www.mtc.berlin</url>
 	</organization>
 	<name>de.mtc.wasaut</name>
 	<description>Automates field management for WASAUT project.</description>
@@ -20,12 +20,10 @@
 			<version>${jira.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- Add dependency on jira-core if you want access to JIRA implementation 
-			classes as well as the sanctioned API. -->
-		<!-- This is not normally recommended, but may be required eg when migrating 
-			a plugin originally developed against JIRA 4.x -->
-		<!-- <dependency> <groupId>com.atlassian.jira</groupId> <artifactId>jira-core</artifactId> 
-			<version>${jira.version}</version> <scope>provided</scope> </dependency> -->
+		<!-- Add dependency on jira-core if you want access to JIRA implementation classes as well as the sanctioned API. -->
+		<!-- This is not normally recommended, but may be required eg when migrating a plugin originally developed against JIRA 4.x -->
+		<!-- <dependency> <groupId>com.atlassian.jira</groupId> <artifactId>jira-core</artifactId> <version>${jira.version}</version> <scope>provided</scope> 
+			</dependency> -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -70,13 +68,19 @@
 		</dependency>
 		<!-- Uncomment to use TestKit in your project. Details at https://bitbucket.org/atlassian/jira-testkit -->
 		<!-- You can read more about TestKit at https://developer.atlassian.com/display/JIRADEV/Plugin+Tutorial+-+Smarter+integration+testing+with+TestKit -->
-		<!-- <dependency> <groupId>com.atlassian.jira.tests</groupId> <artifactId>jira-testkit-client</artifactId> 
-			<version>${testkit.version}</version> <scope>test</scope> </dependency> -->
+		<!-- <dependency> <groupId>com.atlassian.jira.tests</groupId> <artifactId>jira-testkit-client</artifactId> <version>${testkit.version}</version> 
+			<scope>test</scope> </dependency> -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.8.5</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>2.5.6.SEC02</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -91,9 +95,8 @@
 					<productDataVersion>${jira.version}</productDataVersion>
 
 					<!-- Uncomment to install TestKit backdoor in JIRA. -->
-					<!-- <pluginArtifacts> <pluginArtifact> <groupId>com.atlassian.jira.tests</groupId> 
-						<artifactId>jira-testkit-plugin</artifactId> <version>${testkit.version}</version> 
-						</pluginArtifact> </pluginArtifacts> -->
+					<!-- <pluginArtifacts> <pluginArtifact> <groupId>com.atlassian.jira.tests</groupId> <artifactId>jira-testkit-plugin</artifactId> 
+						<version>${testkit.version}</version> </pluginArtifact> </pluginArtifacts> -->
 					<enableQuickReload>true</enableQuickReload>
 					<enableFastdev>false</enableFastdev>
 					<!-- See here for an explanation of default instructions: -->
@@ -141,8 +144,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<plugin.testrunner.version>1.2.3</plugin.testrunner.version>
 		<atlassian.spring.scanner.version>1.2.13</atlassian.spring.scanner.version>
-		<!-- This key is used to keep the consistency between the key in atlassian-plugin.xml 
-			and the key to generate bundle. -->
+		<!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
 		<atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
 		<!-- TestKit version 6.x for JIRA 6.x -->
 		<testkit.version>6.3.11</testkit.version>

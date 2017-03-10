@@ -19,7 +19,6 @@ import com.atlassian.jira.issue.search.SearchException;
 import com.atlassian.jira.issue.search.SearchResults;
 import com.atlassian.jira.issue.util.DefaultIssueChangeHolder;
 import com.atlassian.jira.user.ApplicationUser;
-import com.opensymphony.workflow.WorkflowException;
 
 public class ProjectHelper {
 
@@ -32,7 +31,7 @@ public class ProjectHelper {
 		this.messageHandler = new MessageHandler();
 	}
 
-	public void getProjectUpdates(Map<String, CSVEntry> data) throws WorkflowException {
+	public void getProjectUpdates(Map<String, CSVEntry> data) throws DataInputException {
 		ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
 		List<Issue> issues = getRelevantIssues(currentUser);
 		for (Issue issue : issues) {
@@ -45,7 +44,7 @@ public class ProjectHelper {
 		}
 	}
 
-	public void checkUpdate(Issue issue, Map<String, CSVEntry> data) throws WorkflowException {
+	public void checkUpdate(Issue issue, Map<String, CSVEntry> data) throws DataInputException {
 		log.debug("Checking updates for issue: " + issue.getKey());
 		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
 		customFields.stream().map(t -> t.getName()).forEach(t -> log.debug(t));
@@ -54,20 +53,20 @@ public class ProjectHelper {
 		if (!opField.isPresent()) {
 			Message message = new Message(issue, "Key field is missing");
 			messageHandler.error(message);
-			throw new WorkflowException(message.toString(false));
+			throw new DataInputException(message.toString(false));
 		}
 		CustomField typeField = opField.get();
 		String type = (String) issue.getCustomFieldValue(typeField);
 		if (type == null || type.isEmpty()) {
 			Message message = new Message(issue, "The value for the \"Project/Contract\" field is not set");
 			messageHandler.error(message);
-			throw new WorkflowException(message.toString(false));
+			throw new DataInputException(message.toString(false));
 		}
 		CSVEntry entries = data.get(type);
 		if (entries == null) {
 			Message message = new Message(issue, "The value " + type + " for the \"Project/Contract\" field is deprecated or invalid");
 			messageHandler.error(message);
-			throw new WorkflowException(message.toString(false));
+			throw new DataInputException(message.toString(false));
 		}
 		for (CustomField customField : customFields) {
 			String newValue = entries.get(customField.getName());
@@ -85,7 +84,7 @@ public class ProjectHelper {
 
 
 	
-	private List<Issue> getRelevantIssues(ApplicationUser currentUser) throws WorkflowException {
+	private List<Issue> getRelevantIssues(ApplicationUser currentUser) throws DataInputException {
 		String jqlQuery = PluginCache.getJqlQuery();
 		List<Issue> result = new ArrayList<>();
 		SearchService searchService = ComponentAccessor.getComponentOfType(SearchService.class);
@@ -115,21 +114,21 @@ public class ProjectHelper {
 	}
 	
 	
-	private void setFieldValues(Issue issue, Map<String, CSVEntry> data, boolean update) throws WorkflowException {
+	private void setFieldValues(Issue issue, Map<String, CSVEntry> data, boolean update) throws DataInputException {
 		log.debug(new Message(issue, "Initializing custom fields").toString(false));
 		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
 		Optional<CustomField> opField = customFields.stream()
 				.filter(t -> t.getName().equals(PluginConstants.CF_FIELDS_NAMES[1])).findFirst();
 		if (!opField.isPresent()) {
 			Message message = new Message(issue, "Key custom field is missing");
-			throw new WorkflowException(message.toString(false));
+			throw new DataInputException(message.toString(false));
 		}
 		CustomField typeField = opField.get();
 		String type = (String) issue.getCustomFieldValue(typeField);
 		CSVEntry csvEntry = data.get(type);
 		if (csvEntry == null) {
 			Message message = new Message(issue, "Unknown value in key field " + type);
-			throw new WorkflowException(message.toString(false));
+			throw new DataInputException(message.toString(false));
 		}
 		for (CustomField customField : customFields) {
 			String newValue = csvEntry.get(customField.getName());
@@ -147,11 +146,11 @@ public class ProjectHelper {
 		}
 	}
 
-	public void updateFields(Issue issue, Map<String, CSVEntry> data) throws WorkflowException {
+	public void updateFields(Issue issue, Map<String, CSVEntry> data) throws DataInputException {
 		setFieldValues(issue, data, true);
 	}
 
-	public void initFields(MutableIssue issue, Map<String, CSVEntry> data) throws WorkflowException {
+	public void initFields(MutableIssue issue, Map<String, CSVEntry> data) throws DataInputException {
 		setFieldValues(issue, data, false);
 	}
 

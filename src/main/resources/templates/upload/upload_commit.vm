@@ -1,25 +1,36 @@
-<div style="margin-left:50px;margin-top:50px">
-<h2>The following updates were performed</h2>
+<html>
+<head>
+<title>Changed</title>
+<meta name="decorator" content="atl.general"</meta>
+</head>
+<body>
+	<div class="aui-page-panel">
+		<div class="aui-page-panel-inner" />
+		<section class="aui-page-panel-content">
+			#if($succeededUpdates.isEmpty())
+				<h2>No Updates were performed</h2>
+			#else			
+				<h2>The following updates were performed</h2>
+			#end
+			#foreach($update in $succeededUpdates) 
+				#set($old = $update.getOldValue()) 
+				#if( ! $old ) #set($old = "null") #end 
+				<a href="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field
+				<tt>$update.getCustomField().getName()</tt>changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>. <br> 
+			#end
 
-#foreach($update in $succeededUpdates) 
-	#set($old = $update.getOldValue())
-	#if( ! $old ) 
-		#set($old = "null")
-	#end
-	<a href ="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field 
-	<tt>$update.getCustomField().getName()</tt> changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
-	<br>
-#end
-
-<h2>The following errors occured</h2>
-
-#foreach($update in $failedUpdates) 
-	#set($old = $update.getOldValue())
-	#if( ! $old ) 
-		#set($old = "null")
-	#end
-	<a href ="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field 
-	<tt>$update.getCustomField().getName()</tt> changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
-	<br>
-#end
-</div>
+			#if($failedUpdates.isEmpty())
+				<h2>No errors occured</h2>
+			#else
+				<h2>The following errors occured</h2>
+			#end
+			#foreach($update in $failedUpdates) #set($old = $update.getOldValue()) 
+				#if( ! $old ) #set($old = "null") #end 
+				<a href="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field
+				<tt>$update.getCustomField().getName()</tt> changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>. <br> 
+			#end
+		</section>
+	</div>
+	</div>
+</body>
+</html>

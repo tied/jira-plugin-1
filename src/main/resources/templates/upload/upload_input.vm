@@ -1,9 +1,36 @@
-<div style="margin-left:50px;margin-top:50px">
-<h2>Upload contract meta data</h2>
-Copy and paste the valid csv data into the text box below
-<form action="$requestContext.baseUrl/secure/WasautUpload.jspa" id="usrform" method="post">
-	<p>JQL Query:<input type="text" name="jqlQuery" form="usrform" size="100" value="$jqlQuery"></p>
-	<textarea rows="50" cols="150" name="csv" form="usrform" ></textarea>);
-	<p><input type="submit"/></p>
-</form>
-</div>
+<html>
+  <head>
+    <title>Upload contract data</title>
+    <meta name="decorator" content="atl.general"</meta>
+  </head>
+  <body>
+    <div class="aui-page-panel">
+      <div class="aui-page-panel-inner"/>
+        <section class="aui-page-panel-content">
+          <h2>Upload contract meta data</h2>
+          <h>Copy and paste the valid csv data into the text box below</h>        
+          <form class="aui" 
+            action="$requestContext.baseUrl/secure/WasautUpload.jspa" 
+            id="usrform" method="post">
+            <div class="form-body">
+              <div class="field-group">
+                <label for="jqlQuery">JQL Query</label>
+                <input class="text long-field" type="text" name="jqlQuery" id="jqlQuery"
+                  placeHolder="JQL Query" form="usrform" value="$jqlQuery">
+                <br/><br/>
+                <label for="csv">CSV Data</label>
+                <textarea rows="50" cols="150" name="csv" id="csv" form="usrform" ></textarea>
+                <div class="description">Enter valid csv data</div>
+              </div>
+            </div>
+            <div class="buttons-container form-footer">
+              <button class="aui-button aui-button-primary">Check issue changes</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>
+	
+	
