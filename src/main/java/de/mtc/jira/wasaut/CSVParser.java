@@ -108,21 +108,4 @@ public class CSVParser {
 		}
 		result.put(parts[1], entry);
 	}
-
-
-	public static void main(String[] args) throws Exception {
-		String path = "C:\\Users\\EMJVK\\Downloads\\BBS_Contracts_2017_02_16.csv";
-		InputStream in = new FileInputStream(new File(path));
-		try (BufferedReader read = new BufferedReader(new InputStreamReader(in))) {
-			Map<String, CSVEntry> result = readData(read.lines().collect(Collectors.toList()));
-			for (Map.Entry<String, CSVEntry> entry : result.entrySet()) {
-				System.out.println();
-				System.out.println(entry.getKey());
-				CSVEntry csv = entry.getValue();
-				System.out.println(csv.get(CSVEntry.DEPARTMENT));
-				System.out.println(csv.get(CSVEntry.SITE_AREA));
-				System.out.println(csv.get(CSVEntry.SITE_NAME));
-			}
-		}
-	}
 }
