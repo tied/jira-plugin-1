@@ -15,7 +15,7 @@
 				#else
 					#foreach($message in $messageHandler.getErrors())
 						#set($issue = $message.getIssue())
-						<a href ="$getIssueLink($issue)">$issue.getKey()</a>: $message.getMessage() <br>
+						<a href ="$baseurl/browse/$issue.getKey()">$issue.getKey()</a>: $message.getMessage() <br>
 					#end
 				#end
 				
@@ -24,12 +24,12 @@
 				#if($issueUpdates.isEmpty())
 					<p>All issues are up to date.</p>
 				#else
-					#foreach($update in $issueUpdates) 
+					#foreach($update in $issueUpdates)
 						#set($old = $update.getOldValue())
 						#if( ! $old ) 
 							#set($old = "null")
 						#end
-						<a href ="$update.issueLink"><tt>$update.getIssue().getKey()</tt>: </a>Field 
+						<a href ="$update.getLink()"><tt>$update.getIssue().getKey()</tt>: </a>Field 
 						<tt>$update.getCustomField().getName()</tt> will be changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
 						<br>
 					#end

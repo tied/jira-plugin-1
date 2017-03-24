@@ -56,8 +56,7 @@ public class IssueListener implements InitializingBean, DisposableBean {
 			try {
 				new ProjectHelper().updateFields(issue, CSVParser.getData());
 			} catch (Exception e) {
-				log.error("An exception occured while trying to set field values for issue " + issue.getKey(),
-						e.getMessage());
+				log.error("An exception occured while trying to set field values for issue " + issue.getKey(), e);
 			}
 		}
 	}

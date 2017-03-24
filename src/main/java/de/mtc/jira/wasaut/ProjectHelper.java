@@ -9,15 +9,17 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.jira.bc.issue.IssueService;
+import com.atlassian.jira.bc.issue.IssueService.UpdateValidationResult;
 import com.atlassian.jira.bc.issue.search.SearchService;
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.CustomFieldManager;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.ModifiedValue;
+import com.atlassian.jira.issue.IssueInputParameters;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.search.SearchException;
 import com.atlassian.jira.issue.search.SearchResults;
-import com.atlassian.jira.issue.util.DefaultIssueChangeHolder;
 import com.atlassian.jira.user.ApplicationUser;
 
 public class ProjectHelper {
@@ -47,7 +49,6 @@ public class ProjectHelper {
 	public void checkUpdate(Issue issue, Map<String, CSVEntry> data) throws DataInputException {
 		log.debug("Checking updates for issue: " + issue.getKey());
 		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
-		// customFields.stream().map(t -> t.getName()).forEach(t -> log.debug(t));
 		Optional<CustomField> opField = customFields.stream()
 				.filter(t -> t.getName().equals(PluginConstants.CF_FIELDS_NAMES[1])).findFirst();
 		if (!opField.isPresent()) {
@@ -64,7 +65,8 @@ public class ProjectHelper {
 		}
 		CSVEntry entries = data.get(type);
 		if (entries == null) {
-			Message message = new Message(issue, "The value " + type + " for the \"Project/Contract\" field is deprecated or invalid");
+			Message message = new Message(issue,
+					"The value " + type + " for the \"Project/Contract\" field is deprecated or invalid");
 			messageHandler.error(message);
 			throw new DataInputException(message.toString(false));
 		}
@@ -82,8 +84,6 @@ public class ProjectHelper {
 		}
 	}
 
-
-	
 	private List<Issue> getRelevantIssues(ApplicationUser currentUser) throws DataInputException {
 		String jqlQuery = PluginCache.getJqlQuery();
 		List<Issue> result = new ArrayList<>();
@@ -110,39 +110,36 @@ public class ProjectHelper {
 			log.debug("Search result not valid " + parseResult.getErrors());
 		}
 		return result;
-		
+
 	}
-	
-	
+
 	private void setFieldValues(Issue issue, Map<String, CSVEntry> data, boolean update) throws DataInputException {
 		log.debug(new Message(issue, "Initializing custom fields").toString(false));
-		List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
-		Optional<CustomField> opField = customFields.stream()
-				.filter(t -> t.getName().equals(PluginConstants.CF_FIELDS_NAMES[1])).findFirst();
-		if (!opField.isPresent()) {
-			Message message = new Message(issue, "Key custom field is missing");
-			throw new DataInputException(message.toString(false));
+		CustomFieldManager cfm = ComponentAccessor.getCustomFieldManager();
+		CustomField typeField = cfm.getCustomFieldObjectByName(PluginConstants.CF_FIELDS_NAMES[1]);
+		if (typeField == null) {
+			throw new DataInputException("Type Field is missing for issue " + issue.getKey());
 		}
-		CustomField typeField = opField.get();
 		String type = (String) issue.getCustomFieldValue(typeField);
 		CSVEntry csvEntry = data.get(type);
 		if (csvEntry == null) {
 			Message message = new Message(issue, "Unknown value in key field " + type);
 			throw new DataInputException(message.toString(false));
 		}
-		for (CustomField customField : customFields) {
-			String newValue = csvEntry.get(customField.getName());
-			if (newValue == null) {
-				continue;
+		IssueService issueService = ComponentAccessor.getIssueService();
+		IssueInputParameters issueInputParameters = issueService.newIssueInputParameters();
+		for(String fieldName : PluginConstants.RELEVANT_FIELD_NAMES) {
+			CustomField cf = cfm.getCustomFieldObjectByName(fieldName);
+			if (cf == null) {
+				throw new DataInputException("Field " + fieldName + " is missing for issue " + issue.getKey());
 			}
-			if (update) {
-				Object oldValue = customField.getValue(issue);
-				if (!newValue.equals(oldValue)) {
-					new IssueUpdate(issue, customField, oldValue, newValue).publish();
-				}
-			} else {
-				((MutableIssue) issue).setCustomFieldValue(customField, newValue);
-			}
+			String newValue = csvEntry.get(fieldName);
+			issueInputParameters.addCustomFieldValue(cf.getId(), newValue);
+		}
+		ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+		UpdateValidationResult validationResult = issueService.validateUpdate(currentUser, issue.getId(), issueInputParameters);
+		if(validationResult.isValid()) {
+			issueService.update(currentUser, validationResult);
 		}
 	}
 
@@ -175,51 +172,69 @@ public class ProjectHelper {
 			this.oldValue = oldValue;
 			this.newValue = newValue;
 		}
-		
-		
+
 		public Object getOldValue() {
 			return oldValue;
 		}
-		
+
 		public String getNewValue() {
 			return newValue;
 		}
-		
+
 		public CustomField getCustomField() {
 			return customField;
 		}
-		
+
 		public Issue getIssue() {
 			return issue;
 		}
-				
+		
+		public String getLink() {
+			return ComponentAccessor.getApplicationProperties().getString("jira.baseurl") + "/browse/"
+					+ issue.getKey();
+		}
+
 		public void publish() {
-			log.debug(new Message(issue, customField, "Publishing...").toString(false));
-
-			MutableIssue iss;
-
-			if (issue instanceof MutableIssue) {
-				iss = (MutableIssue) issue;
-			} else {
-				iss = ComponentAccessor.getIssueManager().getIssueObject(issue.getId());
-			}
-			customField.updateValue(null, iss, new ModifiedValue<Object>(oldValue, newValue),
-					new DefaultIssueChangeHolder());
-			
-			// TODO
-			iss.store();
-
-			Object newFieldValue = customField.getValue(iss);
-
-			if ((newValue == null && newFieldValue != null) || !newValue.equals(newFieldValue)) {
-				Message message = new Message(issue, customField, "Update failed: " + newValue + " != " + oldValue);
-				messageHandler.error(message);
-				log.error(message.toString(false));
-			} else {
-				Message message = new Message(issue, customField, "Updated from " + oldValue + " to " + newValue);
-				messageHandler.info(message);
-				log.debug(message.toString(false));
+			IssueService issueService = ComponentAccessor.getIssueService();
+			IssueInputParameters issueInputParameters = issueService.newIssueInputParameters();
+			issueInputParameters.addCustomFieldValue(customField.getId(), newValue);
+			ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+			UpdateValidationResult validationResult = issueService.validateUpdate(currentUser, issue.getId(), issueInputParameters);
+			log.debug("Setting {}={} for issue {}", customField.getName(), newValue, issue.getKey());
+			if(validationResult.isValid()) {
+				issueService.update(currentUser, validationResult);
 			}
 		}
+			
+//			
+//			
+//			
+//			log.debug(new Message(issue, customField, "Publishing...").toString(false));
+//
+//			MutableIssue iss;
+//
+//			if (issue instanceof MutableIssue) {
+//				iss = (MutableIssue) issue;
+//			} else {
+//				iss = ComponentAccessor.getIssueManager().getIssueObject(issue.getId());
+//			}
+//			customField.updateValue(null, iss, new ModifiedValue<Object>(oldValue, newValue),
+//					new DefaultIssueChangeHolder());
+//
+//			// TODO
+//			iss.store();
+//
+//			Object newFieldValue = customField.getValue(iss);
+//
+//			if ((newValue == null && newFieldValue != null) || !newValue.equals(newFieldValue)) {
+//				Message message = new Message(issue, customField, "Update failed: " + newValue + " != " + oldValue);
+//				messageHandler.error(message);
+//				log.error(message.toString(false));
+//			} else {
+//				Message message = new Message(issue, customField, "Updated from " + oldValue + " to " + newValue);
+//				messageHandler.info(message);
+//				log.debug(message.toString(false));
+//			}
+//		}
 	}
 }

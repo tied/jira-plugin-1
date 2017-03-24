@@ -49,7 +49,6 @@ public class ContractsMultiSelectCF extends GenericTextCFType {
 	public Map getVelocityParameters(Issue issue, CustomField field, FieldLayoutItem fieldLayoutItem) {
 		Map<String, Object> map = new HashMap<>();
 		String value = null;
-		
 		try {
 			value = (String) issue.getCustomFieldValue(field);
 			List<String> results = new ArrayList<>();
