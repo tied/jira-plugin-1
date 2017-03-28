@@ -26,6 +26,16 @@
 		</actions>
 	</webwork1>
 
+	<webwork1 key="check" name="Check" class="java.lang.Object">
+		<actions>
+			<action name="de.mtc.jira.wasaut.webwork.WasautCheck" alias="WasautCheck">
+				<view name="success">/templates/check/check_view.vm</view>
+<!-- 				<view name="input">/templates/upload/upload_input.vm</view>
+				<view name="commit">/templates/upload/upload_commit.vm</view>
+				<view name="error">/templates/upload/upload_error.vm</view> -->
+			</action>
+		</actions>
+	</webwork1>
 
 	<web-section key="upload-section" location="atl.jira.proj.config" weight="80" />
 	<web-item key="upload_link" section="atl.jira.proj.config/upload-section" weight="15">

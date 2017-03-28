@@ -29,7 +29,7 @@
 						#if( ! $old ) 
 							#set($old = "null")
 						#end
-						<a href ="$update.getLink()"><tt>$update.getIssue().getKey()</tt>: </a>Field 
+						<a href ="$baseurl/browse/$update.getIssue().getKey()"><tt>$update.getIssue().getKey()</tt>: </a>Field 
 						<tt>$update.getCustomField().getName()</tt> will be changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
 						<br>
 					#end

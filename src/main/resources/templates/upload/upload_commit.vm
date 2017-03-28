@@ -6,33 +6,32 @@
 <body>
 	<div class="aui-page-panel">
 		<div class="aui-page-panel-inner" />
-		<section class="aui-page-panel-content">
-			#if($succeededUpdates.isEmpty())
-				<h2>No Updates were performed</h2>
-			#else			
-				<h2>The following updates were performed</h2>
-			#end
-			#foreach($update in $succeededUpdates) 
-				#set($old = $update.getOldValue())
-				#if( ! $old ) #set($old = "null") #end 
-				<a href="$update.getLink()"><tt>$update.getIssue().getKey()</tt>: </a>Field
-				<tt>$update.getCustomField().getName()</tt>changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>. <br> 
-			#end
-
-			#if($failedUpdates.isEmpty())
-				<h2>No errors occured</h2>
-			#else
-				<h2>The following errors occured</h2>
-			#end
-			#foreach($update in $failedUpdates) 
-				#set($old = $update.getOldValue())
-				#set($issue = $update.getIssue()) 
-				#if( ! $old ) #set($old = "null") #end 
-				<a href="$update.getLink()"><tt>$update.getIssue().getKey()</tt>: </a>Field
-				<tt>$update.getCustomField().getName()</tt> changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>. <br> 
-			#end
-		</section>
-	</div>
+			<section class="aui-page-panel-content">
+				#if($succeededUpdates.isEmpty())
+					<h2>No Updates were performed</h2>
+				#else			
+					<h2>The following updates were performed</h2>
+				#end
+				#foreach($update in $succeededUpdates) 
+					#set($old = $update.getOldValue())
+					#if( ! $old ) #set($old = "null") #end 
+					<a href="$update.getLink()"><tt>$update.getIssue().getKey()</tt>: </a>Field
+					<tt>$update.getCustomField().getName()</tt>changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>. <br> 
+				#end
+				#if($failedUpdates.isEmpty())
+					<h2>No errors occured</h2>
+				#else
+					<h2>The following errors occured</h2>
+				#end
+				#foreach($update in $failedUpdates) 
+					#set($old = $update.getOldValue())
+					#set($issue = $update.getIssue()) 
+					#if( ! $old ) #set($old = "null") #end 
+					<a href="$update.getLink()"><tt>$update.getIssue().getKey()</tt>: </a>Field
+					<tt>$update.getCustomField().getName()</tt> changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>. <br> 
+				#end
+			</section>
+		</div>
 	</div>
 </body>
 </html>

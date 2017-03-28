@@ -4,12 +4,12 @@ import java.util.Map;
 
 public class CSVData {
 
-	private final Map<String, CSVEntry> data;
+	private final Map<String, CSVEntry> rows;
 	private String changedBy;
 	private String lastChanged;
 	
 	public CSVData(Map<String, CSVEntry> data) {
-		this.data = data;
+		this.rows = data;
 	}
 	
 	public String getLastChanged() {
