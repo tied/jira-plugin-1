@@ -12,7 +12,8 @@ public class CSVEntry {
 	}
 	
 	public String get(String key) {
-		return columns.get(key);
+		String result = columns.get(key);
+		return result == null ? PluginConstants.NONE : result;
 	}
 	
 	public String toString() {

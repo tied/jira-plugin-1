@@ -25,7 +25,7 @@ public class CSVParser {
 
 	private final static String CSV_FILE_NAME = "wasaut.csv";
 	private final static Logger log = LoggerFactory.getLogger("CSVParser.class");
-
+	
 	public static Map<String, CSVEntry> getData() throws DataInputException {
 		Map<String, CSVEntry> result = PluginCache.getData();
 		log.debug("Returning cached data");
