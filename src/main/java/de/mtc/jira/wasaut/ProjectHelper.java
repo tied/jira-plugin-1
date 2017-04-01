@@ -1,6 +1,7 @@
 package de.mtc.jira.wasaut;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,6 +24,8 @@ import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.web.bean.PagerFilter;
 
 public class ProjectHelper {
+	
+
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectHelper.class);
 	private List<IssueUpdate> updates = new ArrayList<>();
@@ -95,14 +98,19 @@ public class ProjectHelper {
 		CSVEntry csvEntry = getCSVEntry(issue, data);
 		IssueService issueService = ComponentAccessor.getIssueService();
 		IssueInputParameters issueInputParameters = issueService.newIssueInputParameters();
+		Map<String, Object> check = new HashMap<>();
 		for (String fieldName : PluginConstants.RELEVANT_FIELD_NAMES) {
 			CustomField cf = cfm.getCustomFieldObjectByName(fieldName);
 			if (cf == null) {
 				throw new DataInputException("Field " + fieldName + " is missing for issue " + issue.getKey());
 			}
 			String newValue = csvEntry.get(fieldName);
-			log.debug("Preparing to set field {} to value {}", newValue);
+			if (newValue == null || newValue.isEmpty()) {
+				newValue = PluginConstants.NONE;
+			}
+			log.debug("Preparing to set field {} to value {}", cf.getName(), newValue);
 			issueInputParameters.addCustomFieldValue(cf.getId(), newValue);
+			check.put(cf.getName(), newValue);
 		}
 		ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
 		UpdateValidationResult validationResult = issueService.validateUpdate(currentUser, issue.getId(),
@@ -113,6 +121,15 @@ public class ProjectHelper {
 			log.error("Issue {} cannot be updated, invalid validation result", issue.getKey());
 			for (String message : validationResult.getErrorCollection().getErrorMessages()) {
 				log.error(message);
+			}
+		}
+
+		for (String fieldName : check.keySet()) {
+			Object fieldValue = issue.getCustomFieldValue(cfm.getCustomFieldObjectByName(fieldName));
+			Object expected = check.get(fieldName);
+			if ((fieldValue == null && expected != null) || (fieldValue != null && expected == null)
+					|| !fieldValue.equals(expected)) {
+				log.error("Expected: {}, Actual: {}", expected, fieldValue);
 			}
 		}
 	}
@@ -171,7 +188,7 @@ public class ProjectHelper {
 			this.issue = issue;
 			this.customField = customField;
 			this.oldValue = oldValue;
-			this.newValue = newValue;
+			this.newValue = newValue == null || newValue.isEmpty() ? PluginConstants.NONE : newValue;
 		}
 
 		public Object getOldValue() {

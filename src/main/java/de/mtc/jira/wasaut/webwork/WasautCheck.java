@@ -28,7 +28,7 @@ public class WasautCheck extends JiraWebActionSupport {
 		private String second;
 		public Pair(String first, String second) {
 			this.first = first;
-			this.second = second;
+			this.second = second == null ? PluginConstants.NONE : second;
 		}
 		public String getFirst() {
 			return first;
@@ -84,7 +84,7 @@ public class WasautCheck extends JiraWebActionSupport {
 			String key = (String) issue.getCustomFieldValue(cfm.getCustomFieldObjectByName("Project / Contract"));
 			for (String fieldName : PluginConstants.RELEVANT_FIELD_NAMES) {
 				CSVEntry entry = CSVParser.getData().get(key);
-				String csvValue = entry == null ? "undefined" : entry.get(fieldName);
+				String csvValue = entry == null ? PluginConstants.NONE : entry.get(fieldName);
 				String fieldValue = (String) issue.getCustomFieldValue(cfm.getCustomFieldObjectByName(fieldName));
 				tablePair.add(csvValue, fieldValue);
 			}

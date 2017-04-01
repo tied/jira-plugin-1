@@ -33,13 +33,13 @@ public class IssueListener implements InitializingBean, DisposableBean {
 	public void afterPropertiesSet() throws Exception {
 		log.info("\n==================================\n");
 		log.info("\n   Enabling Jira-Holiday Plugin   \n");
-		log.info("\n   Jira-Holiday has been enabled    \n");
+		log.info("\n   MTC-WASAUT plugin has been enabled    \n");
 		eventPublisher.register(this);
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		log.info("Plugin jira-holiday is destroyed");
+		log.info("Plugin MTC-WASAUT is destroyed");
 		eventPublisher.unregister(this);
 	}
 
