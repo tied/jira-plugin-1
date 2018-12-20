@@ -1,7 +1,10 @@
 #customControlHeader ($action $customField.id $customField.name $fieldLayoutItem.required $displayParameters $auiparams)
-<select class="text" id="$customField.id" name="$customField.id">
-#foreach ($str in $result) 
-	<option value="$str">$str</option>
-#end
+<select required class="select long-field" id="$customField.id" name="$customField.id">
+	#if( ! $selected )
+		<option value="">None</option>
+	#end
+	#foreach ($str in $result) 
+		<option value="$str">$str</option>
+	#end
 </select>
 #customControlFooter ($action $customField.id $fieldLayoutItem.fieldDescription $displayParameters $auiparams)

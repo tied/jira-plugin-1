@@ -1,0 +1,47 @@
+<html>
+	<head>
+		<title>Validate Changes</title>
+		<meta name="decorator" content="atl.general"</meta>
+	</head>
+	<body>
+		<div class="aui-page-panel">
+			<div class="aui-page-panel-inner">
+				<section class="aui-page-panel-content">
+
+				<h3>Errors</h3>
+
+				#if($messageHandler.getErrors().isEmpty())
+					No errors
+				#else
+					#foreach($message in $messageHandler.getErrors())
+						#set($issue = $message.getIssue())
+						<a href ="$baseurl/browse/$issue.getKey()">$issue.getKey()</a>: $message.getMessage() <br>
+					#end
+				#end
+				
+				<h2>Updates</h2>
+				
+				#if($issueUpdates.isEmpty())
+					<p>All issues are up to date.</p>
+				#else
+					#foreach($update in $issueUpdates)
+						#set($old = $update.getOldValue())
+						#if( ! $old ) 
+							#set($old = "null")
+						#end
+						<a href ="$baseurl/browse/$update.getIssue().getKey()"><tt>$update.getIssue().getKey()</tt>: </a>Field 
+						<tt>$update.getCustomField().getName()</tt> will be changed from <tt>$old</tt> to <tt>$update.getNewValue()</tt>.
+						<br>
+					#end
+				#end
+
+				
+				<form class="aui" action="$requestContext.baseUrl/secure/WasautUpload!commit.jspa" id="usrform" method="get">
+					<div class="buttons-container form-footer">
+              			<button class="aui-button aui-button-primary">Commit</button>
+            		</div>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

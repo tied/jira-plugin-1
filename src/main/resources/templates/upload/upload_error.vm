@@ -1,0 +1,16 @@
+<html>
+	<head>
+		<title>Upload Error</title>
+		<meta name="decorator" content="atl.general"</meta>
+	</head>
+	<body>
+	<h2>An error occured</h2>
+		<div class="aui-page-panel">
+			<div class="aui-page-panel-inner">
+				<section class="aui-page-panel-content">
+					<pre>$stackTraceAsString</pre>
+				<section>
+			</div>
+		</div>
+	</body>
+</html>

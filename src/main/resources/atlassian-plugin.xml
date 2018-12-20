@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<atlassian-plugin key="${project.groupId}.${project.artifactId}"
-	name="${project.name}" plugins-version="2">
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
 
 	<plugin-info>
 		<description>${project.description}</description>
@@ -8,40 +7,42 @@
 		<vendor name="${project.organization.name}" url="${project.organization.url}" />
 	</plugin-info>
 
-	<customfield-type name="WASAUT Project Picker"
-		i18n-name-key="wasaut-custom-field.name" key="wasaut-custom-field"
+	<customfield-type name="WASAUT Project Picker" i18n-name-key="wasaut-custom-field.name" key="wasaut-custom-field"
 		class="de.mtc.jira.wasaut.cf.ContractsMultiSelectCF">
 		<description key="wasaut-custom-field.description">Multi Select field for MTC Contracts
 		</description>
-		<resource name="edit" type="velocity"
-			location="/templates/customfields/contracts-edit.vm" />
-		<resource name="view" type="velocity"
-			location="/templates/customfields/contracts-view.vm" />
+		<resource name="edit" type="velocity" location="/templates/customfields/contracts-edit.vm" />
+		<resource name="view" type="velocity" location="/templates/customfields/contracts-view.vm" />
 	</customfield-type>
 
-	<!-- <workflow-function key="wasaut-create-issue-post-function" name="Create 
-		WASAUT issue post function" i18n-name-key="wasaut-create-issue-post-function.name" 
-		class="com.atlassian.jira.plugin.workflow.WorkflowNoInputPluginFactory"> 
-		<description key="wasaut-create-issue-post-function.description">WASAUT create 
-		issue post function</description> <function-class>de.mtc.jira.wasaut.workflow.CreateIssuePostFunction</function-class> 
-		<resource type="velocity" name="view" location="templates/postfunctions/close-parent-issue-post-function.vm" 
-		/> </workflow-function> -->
+	<webwork1 key="upload" name="Upload" class="java.lang.Object">
+		<actions>
+			<action name="de.mtc.jira.wasaut.webwork.WasautUpload" alias="WasautUpload">
+				<view name="success">/templates/upload/upload_view.vm</view>
+				<view name="input">/templates/upload/upload_input.vm</view>
+				<view name="commit">/templates/upload/upload_commit.vm</view>
+				<view name="error">/templates/upload/upload_error.vm</view>
+			</action>
+		</actions>
+	</webwork1>
 
-	<!-- <job key="berlin.mtc.populatefields" name="Fill empty fields" class="mtc.jira.contracts.workflow.PopulateFieldsJob" 
-		/> <trigger key="myTrigger" name="My Trigger"> <job key="berlin.mtc.populatefields" 
-		/> <schedule repeat-interval="50000" /> </trigger> -->
+	<webwork1 key="check" name="Check" class="java.lang.Object">
+		<actions>
+			<action name="de.mtc.jira.wasaut.webwork.WasautCheck" alias="WasautCheck">
+				<view name="success">/templates/check/check_view.vm</view>
+<!-- 				<view name="input">/templates/upload/upload_input.vm</view>
+				<view name="commit">/templates/upload/upload_commit.vm</view>
+				<view name="error">/templates/upload/upload_error.vm</view> -->
+			</action>
+		</actions>
+	</webwork1>
 
-	<servlet name="Upload file servlet" key="upload servlet"
-		class="de.mtc.jira.wasaut.servlet.UploadServlet">
-		<description>Uploads the contract structure data for WASAUT project.</description>
-		<url-pattern>/upload</url-pattern>
-	</servlet>
-	<servlet name="Update project servlet" key="update servlet"
-		class="de.mtc.jira.wasaut.servlet.UpdateServlet">
-		<description>Updates the WASAUT issues according to the new scheme.
-		</description>
-		<url-pattern>/update</url-pattern>
-	</servlet>
+	<web-section key="upload-section" location="atl.jira.proj.config" weight="80" />
+	<web-item key="upload_link" section="atl.jira.proj.config/upload-section" weight="15">
+		<label>Upload project data</label>
+		<link linkId="upload_link">/secure/WasautUpload!default.jspa</link>
+		<condition class="de.mtc.jira.wasaut.WebItemCondition" />
+	</web-item>
 
 	<resource type="i18n" name="i18n" location="atlassian-plugin" />
 </atlassian-plugin>

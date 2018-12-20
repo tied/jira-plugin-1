@@ -1,6 +1,5 @@
 package de.mtc.jira.wasaut.workflow;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -13,6 +12,7 @@ import com.opensymphony.workflow.WorkflowException;
 
 import de.mtc.jira.wasaut.CSVEntry;
 import de.mtc.jira.wasaut.CSVParser;
+import de.mtc.jira.wasaut.DataInputException;
 import de.mtc.jira.wasaut.ProjectHelper;
 
 public class CreateIssuePostFunction extends AbstractJiraFunctionProvider {
@@ -30,7 +30,7 @@ public class CreateIssuePostFunction extends AbstractJiraFunctionProvider {
 			ProjectHelper helper = new ProjectHelper();
 			helper.initFields(issue, data);
 			return;
-		} catch (IOException e) {
+		} catch (DataInputException e) {
 			log.error("Error reading data.csv", e);
 			throw new WorkflowException(e);
 		}

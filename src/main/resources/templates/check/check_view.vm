@@ -1,0 +1,39 @@
+<html>
+	<head>
+		<title>Check WASAUT</title>
+		<meta name="decorator" content="atl.general"</meta>
+	</head>
+	<body>
+		<div class="aui-page-panel">
+			<div class="aui-page-panel-inner">
+				<section class="aui-page-panel-content">
+				<h3>Compare</h3>
+				<table class="aui" align="center">
+					<tr>
+						<th>Issue</th>
+						<th> </th>
+						#foreach($header in $tableHeaders)
+						<th>$header</th>
+						#end
+					</tr>				
+				#foreach($tablePair in $tablePairs)
+				#set($pairs = $tablePair.getTableLine()) 
+					<tr>
+						<td rowspan="2" valign="center"><a href="$baseurl/browse/$tablePair.getIssueKey()"<b>$tablePair.getIssueKey()</b></td>
+						<td><b>CSV:</b></td>
+						#foreach($pair in $pairs)
+							<td #if( ! $pair.isEqual() ) style="color:red;" #end>$pair.getFirst()</td>
+						#end
+					</tr>
+					<tr>
+						<td><b>Issue Field:</b></td>
+						#foreach($pair in $pairs)
+						<td #if( ! $pair.isEqual() ) style="color:red;" #end>$pair.getSecond()</td>
+						#end
+					</tr>
+				#end
+				</table>
+			</div>
+		</div>
+	</body>
+</html>

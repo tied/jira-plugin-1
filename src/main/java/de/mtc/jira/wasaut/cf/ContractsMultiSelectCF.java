@@ -1,6 +1,5 @@
 package de.mtc.jira.wasaut.cf;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,14 @@ import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 
 import de.mtc.jira.wasaut.CSVParser;
+import de.mtc.jira.wasaut.DataInputException;
 
+
+/**
+ * com.atlassian.tutorial.de.mtc.wasaut:wasaut-custom-field
+ * @author EMJVK
+ *
+ */
 @Scanned
 public class ContractsMultiSelectCF extends GenericTextCFType {
 
@@ -36,23 +42,26 @@ public class ContractsMultiSelectCF extends GenericTextCFType {
 	@Override
 	public void updateValue(CustomField customField, Issue issue, String value) {
 		super.updateValue(customField, issue, value);
-		System.out.println(customField.getName() + " " + issue.getKey() + " was updated to value " + value);
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Map getVelocityParameters(Issue issue, CustomField field, FieldLayoutItem fieldLayoutItem) {
-		Map<String, List<String>> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
+		String value = null;
 		try {
-			String value = (String)issue.getCustomFieldValue(field);
+			value = (String) issue.getCustomFieldValue(field);
 			List<String> results = new ArrayList<>();
-			if(value != null) {
+			if (value == null || value.isEmpty() || value.equalsIgnoreCase("None")) {
+				map.put("selected", Boolean.FALSE);
+			} else {
+				map.put("selected", Boolean.TRUE);
 				results.add(value);
 			}
 			results.addAll(CSVParser.getData().keySet());
 			map.put("result", results);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (DataInputException e) {
+			log.error("An error occured while parsing the content for issue " + issue, e);
 		}
 		return map;
 	}
